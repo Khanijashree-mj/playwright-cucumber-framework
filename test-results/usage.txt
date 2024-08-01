@@ -1,0 +1,44 @@
+┌──────────────────────────────────────────────────────────────┬───────────┬────────────────────────────────────────┐
+│ Pattern / Text                                               │ Duration  │ Location                               │
+├──────────────────────────────────────────────────────────────┼───────────┼────────────────────────────────────────┤
+│ the user is on the login page                                │ 2749.31ms │ e2e/step_definitions/login.steps.ts:7  │
+│   the user is on the login page                              │ 2873.34ms │ e2e/features/login.feature:4           │
+│   the user is on the login page                              │ 2760.85ms │ e2e/features/login.feature:4           │
+│   the user is on the login page                              │ 2716.03ms │ e2e/features/login.feature:4           │
+│   the user is on the login page                              │ 2647.03ms │ e2e/features/login.feature:4           │
+├──────────────────────────────────────────────────────────────┼───────────┼────────────────────────────────────────┤
+│ the user clicks on the login button                          │ 449.53ms  │ e2e/step_definitions/login.steps.ts:25 │
+│   the user clicks on the login button                        │ 1072.51ms │ e2e/features/login.feature:9           │
+│   the user clicks on the login button                        │ 253.17ms  │ e2e/features/login.feature:15          │
+│   the user clicks on the login button                        │ 241.86ms  │ e2e/features/login.feature:22          │
+│   the user clicks on the login button                        │ 230.58ms  │ e2e/features/login.feature:29          │
+├──────────────────────────────────────────────────────────────┼───────────┼────────────────────────────────────────┤
+│ the user enters the username {string}                        │ 285.52ms  │ e2e/step_definitions/login.steps.ts:15 │
+│   the user enters the username "student"                     │ 314.32ms  │ e2e/features/login.feature:20          │
+│   the user enters the username "student"                     │ 282.84ms  │ e2e/features/login.feature:7           │
+│   the user enters the username ""                            │ 276.25ms  │ e2e/features/login.feature:13          │
+│   the user enters the username ""                            │ 268.66ms  │ e2e/features/login.feature:27          │
+├──────────────────────────────────────────────────────────────┼───────────┼────────────────────────────────────────┤
+│ the user enters the password {string}                        │ 232.66ms  │ e2e/step_definitions/login.steps.ts:20 │
+│   the user enters the password ""                            │ 289.57ms  │ e2e/features/login.feature:21          │
+│   the user enters the password "Password123"                 │ 238.98ms  │ e2e/features/login.feature:8           │
+│   the user enters the password ""                            │ 203.52ms  │ e2e/features/login.feature:28          │
+│   the user enters the password "Test@123"                    │ 198.57ms  │ e2e/features/login.feature:14          │
+├──────────────────────────────────────────────────────────────┼───────────┼────────────────────────────────────────┤
+│ the login attempt should fail                                │ 143.05ms  │ e2e/step_definitions/login.steps.ts:39 │
+│   the login attempt should fail                              │ 162.09ms  │ e2e/features/login.feature:23          │
+│   the login attempt should fail                              │ 141.85ms  │ e2e/features/login.feature:16          │
+│   the login attempt should fail                              │ 125.22ms  │ e2e/features/login.feature:30          │
+├──────────────────────────────────────────────────────────────┼───────────┼────────────────────────────────────────┤
+│ the user should see a success message                        │ 137.89ms  │ e2e/step_definitions/login.steps.ts:31 │
+│   the user should see a success message                      │ 137.89ms  │ e2e/features/login.feature:10          │
+├──────────────────────────────────────────────────────────────┼───────────┼────────────────────────────────────────┤
+│ the user should see a username and password required error   │ 118.63ms  │ e2e/step_definitions/login.steps.ts:57 │
+│   the user should see a username and password required error │ 118.63ms  │ e2e/features/login.feature:31          │
+├──────────────────────────────────────────────────────────────┼───────────┼────────────────────────────────────────┤
+│ the user should see a username required error                │ 114.17ms  │ e2e/step_definitions/login.steps.ts:45 │
+│   the user should see a username required error              │ 114.17ms  │ e2e/features/login.feature:17          │
+├──────────────────────────────────────────────────────────────┼───────────┼────────────────────────────────────────┤
+│ the user should see a password required error                │ 109.86ms  │ e2e/step_definitions/login.steps.ts:51 │
+│   the user should see a password required error              │ 109.86ms  │ e2e/features/login.feature:24          │
+└──────────────────────────────────────────────────────────────┴───────────┴────────────────────────────────────────┘

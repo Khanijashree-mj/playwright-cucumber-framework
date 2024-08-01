@@ -1,0 +1,79 @@
+{
+  "default": {
+    "requireModule": [
+      "ts-node/register"
+    ],
+    "paths": [
+      "./e2e/features/*.feature"
+    ],
+    "require": [
+      "./e2e/step_definitions/*.steps.ts",
+      "./e2e/hooks/hooks.ts"
+    ],
+    "format": [
+      "progress-bar",
+      [
+        "rerun",
+        "@rerun.txt"
+      ],
+      [
+        "usage",
+        "test-results/usage.txt"
+      ],
+      [
+        "message",
+        "test-results/messages.ndjson"
+      ],
+      [
+        "junit",
+        "test-results/junit.xml"
+      ],
+      [
+        "html",
+        "test-results/html-formatter.html"
+      ],
+      [
+        "json",
+        "test-results/cucumber-report.json"
+      ]
+    ],
+    "parallel": 1
+  },
+  "rerun": {
+    "requireModule": [
+      "ts-node/register"
+    ],
+    "require": [
+      "./e2e/step_definitions/*.steps.ts",
+      "./e2e/hooks/hooks.ts"
+    ],
+    "format": [
+      "progress-bar",
+      [
+        "rerun",
+        "@rerun.txt"
+      ],
+      [
+        "usage",
+        "test-results/usage.txt"
+      ],
+      [
+        "message",
+        "test-results/messages.ndjson"
+      ],
+      [
+        "junit",
+        "test-results/junit.xml"
+      ],
+      [
+        "html",
+        "test-results/html-formatter.html"
+      ],
+      [
+        "json",
+        "test-results/cucumber-report.json"
+      ]
+    ],
+    "parallel": 2
+  }
+}

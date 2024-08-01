@@ -1,0 +1,36 @@
+{
+  "name": "playwright-cucumber-framework",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "debug": "cross-env ENV=prod PWDEBUG=1 DEBUG=pw:api cucumber-js --config=cucumber.json",
+    "pretest": "npx ts-node e2e/helper/report/init.ts",
+    "test": "cross-env ENV=prod FORCE_COLOR=0 cucumber-js --config=cucumber.json || true",
+    "posttest": "npx ts-node e2e/helper/report/report.ts",
+    "test:failed": "cucumber-js -p rerun @rerun.txt"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/akshay-pathak-techno/playwright-cucumber-framework.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/akshay-pathak-techno/playwright-cucumber-framework/issues"
+  },
+  "homepage": "https://github.com/akshay-pathak-techno/playwright-cucumber-framework#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.45.3",
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^22.0.2",
+    "multiple-cucumber-html-reporter": "^3.7.0"
+  },
+  "dependencies": {
+    "@cucumber/cucumber": "^10.8.0",
+    "cross-env": "^7.0.3",
+    "fs-extra": "^11.2.0",
+    "ts-node": "^10.9.2"
+  }
+}
