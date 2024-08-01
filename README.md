@@ -127,54 +127,6 @@ Feature: User Authentication
     And the user should see a username and password required error
 ```
 
-## Testing Setup with Playwright and Cucumber
-
-### `pageFixture` Overview
-
-The `pageFixture` is a utility used to manage the Playwright `Page` object across different test scenarios. It provides methods to initialize and clear the `Page` instance, ensuring consistent test execution and resource management.
-
-### Key Components in `hooks.ts`
-
-- **`BeforeAll` Hook**:
-
-  - Launches the browser and logs its version.
-
-- **`Before` Hook**:
-
-  - Creates a new browser context and page for each scenario. Initializes `pageFixture.page` with the current `Page` instance.
-
-- **`AfterStep` Hook**:
-
-  - Takes a screenshot of the page after each step and attaches it to the test report.
-
-- **`After` Hook**:
-
-  - Handles post-test actions, including capturing screenshots and videos, stopping tracing, and closing the page and context. Also attaches the video and trace files to the test report if the test passed.
-
-- **`AfterAll` Hook**:
-  - Closes the browser after all tests are complete.
-
-### `login step.ts` Overview
-
-The `login step.ts` file defines step implementations for user authentication scenarios using Playwright and Cucumber. This file includes:
-
-- **`Given` Steps**:
-
-  - **`the user is on the login page`**: Navigates to the login page and verifies the title.
-
-- **`When` Steps**:
-
-  - **`the user enters the username {string}`**: Fills in the username field with the provided value.
-  - **`the user enters the password {string}`**: Fills in the password field with the provided value.
-  - **`the user clicks on the login button`**: Clicks the login button.
-
-- **`Then` Steps**:
-  - **`the user should see a success message`**: Checks if a success message is visible.
-  - **`the login attempt should fail`**: Verifies that an error message is visible for failed login attempts.
-  - **`the user should see a username required error`**: Checks if the username required error message is displayed.
-  - **`the user should see a password required error`**: Checks if the password required error message is displayed.
-  - **`the user should see a username and password required error`**: Checks if the username and password required error message is displayed.
-
 ## Why Playwright + Cucumber?
 
 ### Benefits of Playwright
@@ -198,11 +150,196 @@ The `login step.ts` file defines step implementations for user authentication sc
 
 1. **Behavior-Driven Development (BDD):**
 
-- Cucumber supports Behavior-Driven Development, enabling the writing of tests in a natural language format that is easy to understand and contribute to.
+   - Cucumber facilitates BDD, allowing tests to be written in a natural language style (Gherkin syntax). This makes it easier for non-developers, such as product owners or business analysts, to understand and contribute to the test cases.
 
 2. **Improved Communication:**
 
-   - Cucumber helps bridge the gap between technical and non-technical team members by using Gherkin syntax to describe the behavior of the application.
+   - The Gherkin syntax improves communication between technical and non-technical team members, ensuring that everyone has a clear understanding of the requirements and how they are being tested.
 
-3. **Readable Documentation:**
-   - The Gherkin scenarios serve as living documentation, making it easier to understand the application's expected behavior and requirements.
+3. **Reusable Steps:**
+
+   - Cucumber allows for the definition of reusable steps, which can reduce redundancy and make the test suite more maintainable.
+
+4. **Readable Documentation:**
+   - Tests written in Gherkin also serve as documentation, making it easier to understand the application's expected behavior at a glance.
+
+### Why Not Cypress?
+
+1. **Limited Browser Support:**
+
+   - Cypress primarily supports Chromium-based browsers. While it has experimental support for Firefox, it does not support WebKit, which can be a limitation for testing across all major browsers.
+
+2. **Performance:**
+
+   - While Cypress is fast, Playwright’s parallel test execution can lead to even faster test runs, especially for larger test suites.
+
+3. **Integration Complexity:**
+   - Integrating Cypress with Cucumber is possible but can be more complex compared to Playwright, which provides a more seamless integration.
+
+### Why Not Playwright Alone?
+
+1. **Stakeholder Collaboration:**
+
+   - Cucumber’s natural language approach is beneficial for projects where non-technical stakeholders are involved in writing or reviewing test cases. This collaboration is less effective with Playwright’s native test runner.
+
+2. **Readable Test Cases:**
+
+   - Writing test cases in Gherkin syntax provides clear and readable documentation of test scenarios, which is not as easily achieved with Playwright’s built-in test runner.
+
+3. **Behavior-Driven Development:**
+   - For teams practicing BDD, Cucumber’s approach to defining tests in natural language is more aligned with their workflow compared to using Playwright’s native test runner.
+
+## Code Structure
+
+### Folder Structure
+
+The folder structure for the Playwright + Cucumber setup is organized as follows:
+
+```
+├── e2e
+│   ├── helper
+│   │   ├── report
+│   │   │   ├── init.ts
+│   │   │   └── report.ts
+│   ├── fixtures
+│   │   └── pageFixture.ts
+│   └── step-definitions
+│       └── steps
+
+.ts
+├── test-results
+│   ├── screenshots
+│   ├── trace
+│   └── videos
+├── cucumber.json
+├── hooks.ts
+└── package.json
+```
+
+### `pageFixture.ts`
+
+The `pageFixture.ts` file manages the `Page` object from Playwright:
+
+```typescript
+import { Page } from "@playwright/test";
+
+export const pageFixture = {
+  page: undefined as unknown as Page,
+};
+```
+
+### `hooks.ts`
+
+The `hooks.ts` file contains setup and teardown logic for Playwright and Cucumber:
+
+```typescript
+import {
+  After,
+  AfterAll,
+  AfterStep,
+  Before,
+  BeforeAll,
+  Status,
+} from "@cucumber/cucumber";
+import { pageFixture } from "../fixtures/pageFixture";
+import { Browser, BrowserContext, Page, chromium } from "@playwright/test";
+const fs = require("fs-extra");
+
+let browser: Browser;
+let page: Page;
+let context: BrowserContext;
+
+BeforeAll(async function () {
+  browser = await chromium.launch({ headless: false, slowMo: 50 });
+  console.log(browser.version);
+});
+
+Before(async function ({ pickle }) {
+  const scenarioName = pickle.name + pickle.id;
+
+  context = await browser.newContext({
+    ignoreHTTPSErrors: true,
+    recordVideo: {
+      dir: "test-results/videos",
+    },
+  });
+  await context.tracing.start({
+    name: scenarioName,
+    title: pickle.name,
+    sources: true,
+    screenshots: true,
+    snapshots: true,
+  });
+  page = await context.newPage();
+  pageFixture.page = page;
+});
+
+AfterStep(async function ({ pickle }) {
+  const img = await pageFixture.page.screenshot({
+    path: `./test-results/screenshot/${pickle.name}.png`,
+    type: "png",
+  });
+  await this.attach(img, "image/png");
+});
+
+After(async function ({ pickle, result }) {
+  let videoPath: string = "";
+  let img: Buffer | undefined;
+  const path = `./test-results/trace/${pickle.id}.zip`;
+
+  if (result?.status === Status.PASSED) {
+    img = await pageFixture.page.screenshot({
+      path: `./test-results/screenshot/${pickle.name}.png`,
+      type: "png",
+    });
+
+    videoPath = (await pageFixture.page.video()?.path()) ?? "";
+  }
+
+  await context.tracing.stop({ path });
+  await pageFixture.page.close();
+  await context.close();
+
+  if (result?.status === Status.PASSED) {
+    if (img) {
+      await this.attach(img, "image/png");
+    }
+
+    if (videoPath) {
+      try {
+        const videoBuffer = fs.readFileSync(videoPath);
+        await this.attach(videoBuffer, "video/webm");
+      } catch (error) {
+        console.error("Failed to read video file:", error);
+      }
+    }
+
+    const traceFileLink = `<a href="https://trace.playwright.dev/">Open ${path}</a>`;
+    await this.attach(`Trace file: ${traceFileLink}`, "text/html");
+    await pageFixture.page.close();
+    await context.close();
+  }
+});
+
+AfterAll(async function () {
+  browser.close();
+});
+```
+
+## Screenshots and Videos
+
+### Screenshots
+
+- **Purpose:** Screenshots are taken at each step of the scenario to capture the state of the application during testing.
+- **Location:** Screenshots are saved in the `test-results/screenshots` directory.
+- **Example:**
+
+  ![Successful login screenshot](./test-results/screenshots/Successful_login_with_valid_credentials.png)
+
+### Videos
+
+- **Purpose:** Videos capture the entire test run, providing a visual record of the test execution and any issues encountered.
+- **Location:** Videos are saved in the `test-results/videos` directory.
+- **Example:**
+
+  [Video of successful login](./test-results/videos/Successful_login_with_valid_credentials.webm)
