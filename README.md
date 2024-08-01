@@ -334,7 +334,7 @@ AfterAll(async function () {
 - **Location:** Screenshots are saved in the `test-results/screenshots` directory.
 - **Example:**
 
-  ![Successful login screenshot](./test-results/screenshots/Successful_login_with_valid_credentials.png)
+  ![Successful login screenshot]("./test-results/screenshot/Successful login with valid credentials.png")
 
 ### Videos
 
@@ -342,4 +342,4 @@ AfterAll(async function () {
 - **Location:** Videos are saved in the `test-results/videos` directory.
 - **Example:**
 
-  [Video of successful login](./test-results/videos/Successful_login_with_valid_credentials.webm)
+  [Video of successful login]("./test-results/videos/Successful_login_with_valid_credentials.webm")
