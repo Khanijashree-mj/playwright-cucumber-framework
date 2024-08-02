@@ -343,3 +343,7 @@ AfterAll(async function () {
 - **Example:**
 
   [Video of successful login]("./test-results/videos/Successful_login_with_valid_credentials.webm")
+
+## Playwright Cheatsheet
+
+For a comprehensive guide to using Playwright, including installation, basic and advanced usage, assertions, and more, refer to the [Playwright Cheatsheet](docs/CHEATSHEET.md).
