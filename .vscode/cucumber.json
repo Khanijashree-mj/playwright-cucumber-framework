@@ -1,0 +1,5 @@
+{
+  "glue": ["e2e/step_definitions"],
+  "features": ["e2e/features"],
+  "compiler": ["ts:ts-node/register"]
+}

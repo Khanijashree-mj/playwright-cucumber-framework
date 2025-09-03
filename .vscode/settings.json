@@ -15,10 +15,11 @@
   
   // Cucumber configuration
   "cucumberautocomplete.steps": [
+    "e2e/step_definitions/simple-login.steps.ts",
     "e2e/step_definitions/**/*.ts",
     "e2e/step_definitions/*.ts"
   ],
-  "cucumberautocomplete.syncfeatures": "e2e/features/**/*.feature",
+  "cucumberautocomplete.syncfeatures": "e2e/features/simple-login.feature",
   "cucumberautocomplete.strictGherkinCompletion": true,
   "cucumberautocomplete.strictGherkinValidation": true,
   "cucumberautocomplete.smartSnippets": true,
@@ -43,10 +44,16 @@
   "typescript.preferences.includePackageJsonAutoImports": "auto",
   
   // Additional Cucumber settings
-  "cucumberautocomplete.gherkinDefinitionPart": "(Given|When|Then)\\(",
+  "cucumberautocomplete.gherkinDefinitionPart": "(Given|When|Then)\\s*\\(",
   "cucumberautocomplete.stepRegExSymbol": "\"",
+  "cucumberautocomplete.onTypeFormat": true,
+  "cucumberautocomplete.formatConfOverride": {
+    "And": 4,
+    "Given": 4,  
+    "When": 4,
+    "Then": 4
+  },
   "cucumberautocomplete.pages": {
-    "users": "e2e/pages/UserPage.ts",
     "login": "e2e/pages/LoginPage.ts"
   },
   "cucumberautocomplete.customParameters": [
@@ -58,5 +65,8 @@
       "parameter": "{int}",
       "value": "(\\d+)"
     }
-  ]
+  ],
+  // Force TypeScript compilation
+  "typescript.validate.enable": true,
+  "typescript.format.enable": true
 }
