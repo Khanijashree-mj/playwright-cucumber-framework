@@ -41,7 +41,7 @@ export class DynamicLocatorManager {
   }
 
   /**
-   * Build XPath locator from page element template
+   * Build XPath locator from simple page element path (e.g., "loginPage.usernameField")
    */
   public buildFromTemplate(templatePath: string): { locator: string; patternUsed: string; fallbackUsed: boolean } {
     if (!this.repository) {
@@ -52,65 +52,18 @@ export class DynamicLocatorManager {
     const pageSection = pathParts[0]; // e.g., 'loginPage'
     const elementName = pathParts[1];  // e.g., 'usernameField'
 
-    const element = this.repository.pageElements?.[pageSection]?.[elementName];
+    // Try simple page structure first
+    const simpleLocator = this.repository.pages?.[pageSection]?.[elementName];
     
-    if (!element) {
-      throw new Error(`Page element not found: ${templatePath}`);
-    }
-
-    // Try direct XPath locator first
-    if (element.primary === 'xpath' && element.locator) {
+    if (simpleLocator) {
       return {
-        locator: element.locator,
-        patternUsed: 'xpath-direct',
+        locator: simpleLocator,
+        patternUsed: 'direct-xpath',
         fallbackUsed: false
       };
     }
 
-    // Try primary pattern with parameters
-    if (element.primary && element.parameters) {
-      const patternParts = element.primary.split('.');
-      const category = patternParts[0]; // e.g., 'input'
-      const patternName = patternParts[1]; // e.g., 'byName'
-      
-      const pattern = this.repository.xpathPatterns?.[category]?.[patternName];
-      if (pattern) {
-        const locator = this.replaceParameters(pattern, element.parameters);
-        return {
-          locator,
-          patternUsed: element.primary,
-          fallbackUsed: false
-        };
-      }
-    }
-
-    // Try fallback XPath locator
-    if (element.fallback === 'xpath' && element.fallbackLocator) {
-      return {
-        locator: element.fallbackLocator,
-        patternUsed: 'xpath-fallback',
-        fallbackUsed: true
-      };
-    }
-
-    // Try fallback pattern with parameters
-    if (element.fallback && element.fallbackParams) {
-      const patternParts = element.fallback.split('.');
-      const category = patternParts[0]; // e.g., 'input'
-      const patternName = patternParts[1]; // e.g., 'byId'
-      
-      const pattern = this.repository.xpathPatterns?.[category]?.[patternName];
-      if (pattern) {
-        const locator = this.replaceParameters(pattern, element.fallbackParams);
-        return {
-          locator,
-          patternUsed: element.fallback,
-          fallbackUsed: true
-        };
-      }
-    }
-
-    throw new Error(`No valid XPath pattern found for element: ${templatePath}`);
+    throw new Error(`Page element not found: ${templatePath}. Available pages: ${Object.keys(this.repository.pages || {}).join(', ')}`);
   }
 
   /**

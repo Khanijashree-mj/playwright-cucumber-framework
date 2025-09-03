@@ -26,7 +26,7 @@ export class LoginPage extends BasePage {
   // =============================================================================
 
   async navigateToLoginPage(): Promise<void> {
-    await this.common.navigateTo("https://practicetestautomation.com/practice-test-login");
+    await this.common.navigateTo("https://rc--gci.sandbox.my.salesforce.com/");
     await this.common.waitForPageLoad();
     console.log('✅ Navigated to login page');
   }
@@ -47,17 +47,12 @@ export class LoginPage extends BasePage {
   async performLogin(username: string, password: string): Promise<void> {
     console.log(`🔐 Performing login for user: ${username}`);
     
-    // Get locators using pattern-based repo
-    const usernameLocator = this._getPatternLocator('loginPage.usernameField');
-    const passwordLocator = this._getPatternLocator('loginPage.passwordField');
-    const loginButtonLocator = this._getPatternLocator('loginPage.loginButton');
+    // 🎯 NEW SIMPLE APPROACH - Use property getters!
+    await this.common.safeFill(this.usernameField, username);
+    await this.common.safeFill(this.passwordField, password);
+    await this.common.safeClick(this.loginButton);
     
-    // Fill form using common functions
-    await this.common.safeFill(usernameLocator, username);
-    await this.common.safeFill(passwordLocator, password);
-    await this.common.safeClick(loginButtonLocator);
-    
-    console.log('✅ Login form submitted');
+    console.log('✅ Login form submitted using simple locators');
   }
 
   async performLoginWithPatterns(username: string, password: string): Promise<void> {
@@ -124,16 +119,14 @@ export class LoginPage extends BasePage {
     // Wait for navigation to success page
     await this.common.waitForUrlContains('logged-in-successfully');
     
-    // Verify success message using pattern
-    const successLocator = this._getPatternLocator('loginPage.successMessage');
-    await this.common.assertVisible(successLocator, 'Success message should be visible');
-    await this.common.assertText(successLocator, 'Logged In Successfully', 'Success message should contain correct text');
+    // 🎯 NEW SIMPLE APPROACH - Use property getters!
+    await this.common.assertVisible(this.successMessage, 'Success message should be visible');
+    await this.common.assertText(this.successMessage, 'Logged In Successfully', 'Success message should contain correct text');
     
     // Verify logout button is present
-    const logoutLocator = this._getPatternLocator('loginPage.logoutButton');
-    await this.common.assertVisible(logoutLocator, 'Logout button should be visible');
+    await this.common.assertVisible(this.logoutButton, 'Logout button should be visible');
     
-    console.log('✅ Login success verified');
+    console.log('✅ Login success verified using simple locators');
   }
 
   async verifyLoginError(errorType: string): Promise<void> {
@@ -299,9 +292,37 @@ export class LoginPage extends BasePage {
   }
 
   // =============================================================================
+  // SIMPLE LOCATOR ACCESS - Use these for easy locator fetching
+  // =============================================================================
+
+  // Simple property-like access to locators
+  get usernameField(): string { return this._getLocator('usernameField'); }
+  get passwordField(): string { return this._getLocator('passwordField'); }
+  get loginButton(): string { return this._getLocator('loginButton'); }
+  get successMessage(): string { return this._getLocator('successMessage'); }
+  get errorMessage(): string { return this._getLocator('errorMessage'); }
+  get logoutButton(): string { return this._getLocator('logoutButton'); }
+
+  // =============================================================================
   // PRIVATE HELPER METHODS
   // =============================================================================
 
+  /**
+   * Simple locator fetcher - just pass element name (e.g., 'usernameField')
+   */
+  private _getLocator(elementName: string): string {
+    try {
+      const result = this.locatorManager.buildFromTemplate(`loginPage.${elementName}`);
+      return `xpath=${result.locator}`;
+    } catch (error) {
+      console.error(`❌ Locator not found: loginPage.${elementName}`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Legacy method for compatibility
+   */
   private _getPatternLocator(templatePath: string): string {
     const result = this.locatorManager.buildFromTemplate(templatePath);
     return `xpath=${result.locator}`;
