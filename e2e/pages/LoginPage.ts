@@ -55,6 +55,12 @@ export class LoginPage extends BasePage {
     console.log('✅ Login form submitted using simple locators');
   }
 
+  // async create_opportunity(): Promise<void>{
+  //   console.log("creating lead");
+  //   await this.common.safeClick(this.leadtab);
+
+  // }
+
   async performLoginWithPatterns(username: string, password: string): Promise<void> {
     console.log(`🔐 Performing pattern-based login for user: ${username}`);
     

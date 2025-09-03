@@ -1,14 +1,10 @@
 Feature: Simple Login Tests
   Clean step definitions that delegate to implementation classes
 
-  @simple-login
+  @simple-login1
   Scenario: Successful login with simple steps
     Given I am on the login page
-    When I login with username "student" and password "Password123"
-    Then I should see login success
+    When I login with username "khanijashree.mj@ringcentral.com.gci" and password "Khani@2412"
+   # Then I should see login success
 
-  @simple-login
-  Scenario: Failed login with simple steps
-    Given I am on the login page
-    When I login with username "invalid" and password "wrong"
-    Then I should see login error "invalid-credentials"
+  

@@ -6,7 +6,9 @@
     "loginPage": {
       "usernameField": "//input[@id='username']",
       "passwordField": "//input[@id='password']", 
-      "loginButton": "//button[@id='submit']",
+      "loginButton": "//input[@id='Login']",
+      "leadtab":"//one-app-nav-bar-item-root[@data-id='Lead']",
+      
       "successMessage": "//h1[contains(text(),'Logged In Successfully')]",
       "errorMessage": "//div[@id='error']",
       "logoutButton": "//a[text()='Log out']",
