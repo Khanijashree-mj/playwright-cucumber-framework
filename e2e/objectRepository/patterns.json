@@ -1,0 +1,183 @@
+{
+  "patterns": {
+    "basic": {
+      "inputByName": "//input[@name='{name}']",
+      "inputById": "//input[@id='{id}']",
+      "inputByType": "//input[@type='{type}']",
+      "inputByPlaceholder": "//input[@placeholder='{placeholder}']",
+      "buttonByText": "//button[contains(text(),'{text}')]",
+      "buttonById": "//button[@id='{id}']",
+      "buttonByClass": "//button[contains(@class,'{className}')]",
+      "linkByText": "//a[contains(text(),'{text}')]",
+      "linkByHref": "//a[contains(@href,'{href}')]",
+      "divByClass": "//div[@class='{className}']",
+      "divByText": "//div[contains(text(),'{text}')]",
+      "spanByText": "//span[contains(text(),'{text}')]",
+      "elementById": "//*[@id='{id}']",
+      "elementByClass": "//*[contains(@class,'{className}')]",
+      "elementByAttribute": "//*[@{attribute}='{value}']",
+      "elementByText": "//*[contains(text(),'{text}')]"
+    },
+    "form": {
+      "fieldByLabel": "//label[contains(text(),'{label}')]/following-sibling::input",
+      "fieldByLabelId": "//input[@id='{id}' and //label[@for='{id}']]",
+      "selectByName": "//select[@name='{name}']",
+      "optionByText": "//select[@name='{name}']/option[text()='{option}']",
+      "optionByValue": "//select[@name='{name}']/option[@value='{value}']",
+      "checkboxByName": "//input[@type='checkbox' and @name='{name}']",
+      "radioByValue": "//input[@type='radio' and @value='{value}']",
+      "textareaByName": "//textarea[@name='{name}']",
+      "formByAction": "//form[@action='{action}']",
+      "fieldsetByLegend": "//fieldset[legend[contains(text(),'{legend}')]]"
+    },
+    "table": {
+      "tableCell": "//table//tr[{row}]//td[{column}]",
+      "tableCellByHeaderText": "//table//th[contains(text(),'{headerText}')]/ancestor::table//tr[{row}]//td[position()=count(//table//th[contains(text(),'{headerText}')]/preceding-sibling::th)+1]",
+      "rowByText": "//table//tr[td[contains(text(),'{text}')]]",
+      "rowByPosition": "//table//tbody//tr[{position}]",
+      "cellInRowByText": "//table//tr[td[contains(text(),'{rowText}')]]//td[{column}]",
+      "headerByText": "//table//th[contains(text(),'{text}')]",
+      "tableByCaption": "//table[caption[contains(text(),'{caption}')]]"
+    },
+    "navigation": {
+      "menuItemByText": "//nav//a[contains(text(),'{text}')]",
+      "menuItemByLevel": "//nav//ul[{level}]//li[contains(text(),'{menuText}')]",
+      "breadcrumbByText": "//ol[contains(@class,'breadcrumb')]//a[contains(text(),'{text}')]",
+      "tabByText": "//div[contains(@class,'tab')]//a[contains(text(),'{text}')]",
+      "accordionByText": "//div[contains(@class,'accordion')]//div[contains(text(),'{text}')]"
+    },
+    "list": {
+      "listItemByText": "//ul//li[contains(text(),'{text}')]",
+      "listItemByPosition": "//ul//li[{position}]",
+      "nestedListItem": "//ul//li[contains(text(),'{parentText}')]//ul//li[contains(text(),'{childText}')]",
+      "orderedListItem": "//ol//li[{position}]",
+      "descriptionListTerm": "//dl//dt[contains(text(),'{term}')]",
+      "descriptionListDefinition": "//dl//dt[contains(text(),'{term}')]/following-sibling::dd"
+    },
+    "modal": {
+      "modalByTitle": "//div[contains(@class,'modal')]//h1[contains(text(),'{title}')]",
+      "modalButton": "//div[contains(@class,'modal')]//button[contains(text(),'{text}')]",
+      "modalClose": "//div[contains(@class,'modal')]//button[contains(@class,'close')]",
+      "modalContent": "//div[contains(@class,'modal')]//div[contains(@class,'content')]",
+      "overlayModal": "//div[contains(@class,'overlay')]//div[contains(@class,'modal')]"
+    },
+    "dynamic": {
+      "cardByTitle": "//div[contains(@class,'card')]//h1[contains(text(),'{title}')]",
+      "cardByContent": "//div[contains(@class,'card')][contains(.,'{content}')]",
+      "sidebarSection": "//aside//section[h1[contains(text(),'{section}')]]",
+      "contentSection": "//main//section[h1[contains(text(),'{section}')]]",
+      "articleByTitle": "//article[h1[contains(text(),'{title}')]]"
+    }
+  },
+  "staticElements": {
+    "page": {
+      "loginForm": "//form[@id='login']",
+      "header": "//header[@class='main-header']",
+      "footer": "//footer[@class='main-footer']",
+      "sidebar": "//aside[@class='sidebar']",
+      "mainContent": "//main[@class='main-content']",
+      "navigation": "//nav[@class='main-nav']"
+    },
+    "login": {
+      "usernameInput": "//input[@id='username']",
+      "passwordInput": "//input[@id='password']", 
+      "submitButton": "//button[@id='submit']",
+      "errorMessage": "//div[@id='error']",
+      "successMessage": "//h1[contains(text(),'Logged In Successfully')]",
+      "forgotPasswordLink": "//a[contains(@href,'forgot')]"
+    }
+  },
+  "templates": {
+    "loginPage": {
+      "usernameField": {
+        "pattern": "basic.inputByName",
+        "params": { "name": "username" },
+        "fallback": {
+          "pattern": "basic.inputById",
+          "params": { "id": "username" }
+        }
+      },
+      "passwordField": {
+        "pattern": "basic.inputByName", 
+        "params": { "name": "password" },
+        "fallback": {
+          "pattern": "basic.inputById",
+          "params": { "id": "password" }
+        }
+      },
+      "loginButton": {
+        "pattern": "basic.buttonByText",
+        "params": { "text": "Submit" },
+        "fallback": {
+          "pattern": "basic.buttonById",
+          "params": { "id": "submit" }
+        }
+      }
+    },
+    "dataTable": {
+      "userRow": {
+        "pattern": "table.rowByText",
+        "params": { "text": "{userName}" }
+      },
+      "userEmail": {
+        "pattern": "table.cellInRowByText", 
+        "params": { "rowText": "{userName}", "column": "3" }
+      },
+      "editButton": {
+        "pattern": "table.cellInRowByText",
+        "params": { "rowText": "{userName}", "column": "4" },
+        "suffix": "//button[contains(text(),'Edit')]"
+      }
+    },
+    "dynamicContent": {
+      "productCard": {
+        "pattern": "dynamic.cardByTitle",
+        "params": { "title": "{productName}" }
+      },
+      "addToCart": {
+        "pattern": "dynamic.cardByTitle",
+        "params": { "title": "{productName}" },
+        "suffix": "//button[contains(text(),'Add to Cart')]"
+      },
+      "productPrice": {
+        "pattern": "dynamic.cardByTitle",
+        "params": { "title": "{productName}" },
+        "suffix": "//span[contains(@class,'price')]"
+      }
+    }
+  },
+  "complexPatterns": {
+    "conditionalElements": {
+      "visibleButton": "//button[contains(text(),'{text}') and not(contains(@style,'display:none'))]",
+      "enabledInput": "//input[@name='{name}' and not(@disabled)]",
+      "checkedCheckbox": "//input[@type='checkbox' and @name='{name}' and @checked]"
+    },
+    "hierarchicalElements": {
+      "nestedMenuItem": "//nav//ul[contains(@class,'{parentClass}')]//li[contains(text(),'{parentText}')]//ul//li[contains(text(),'{childText}')]",
+      "sectionWithContent": "//section[h1[contains(text(),'{sectionTitle}')]]//div[contains(text(),'{content}')]",
+      "formFieldInGroup": "//fieldset[legend[contains(text(),'{groupName}')]]//input[@name='{fieldName}']"
+    },
+    "textBasedElements": {
+      "exactTextMatch": "//*[text()='{text}']",
+      "partialTextMatch": "//*[contains(text(),'{text}')]",
+      "textStartsWith": "//*[starts-with(text(),'{text}')]",
+      "textEndsWith": "//*[substring(text(), string-length(text()) - string-length('{text}') + 1) = '{text}']",
+      "caseInsensitiveText": "//*[contains(translate(text(),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'{text}')]"
+    }
+  },
+  "validation": {
+    "requiredPatterns": ["basic", "form", "table"],
+    "patternGroups": {
+      "essential": ["basic.inputByName", "basic.buttonByText", "basic.linkByText"],
+      "forms": ["form.fieldByLabel", "form.selectByName", "form.optionByText"],
+      "tables": ["table.tableCell", "table.rowByText", "table.tableCellByHeaderText"]
+    }
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "description": "Pattern-based object repository for dynamic locator generation",
+    "lastUpdated": "2024-01-01",
+    "totalPatterns": 45,
+    "categories": ["basic", "form", "table", "navigation", "list", "modal", "dynamic"]
+  }
+}
