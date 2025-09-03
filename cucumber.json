@@ -7,7 +7,7 @@
       "./e2e/features/*.feature"
     ],
     "require": [
-      "./e2e/step_definitions/pattern-based.steps.ts",
+      "./e2e/step_definitions/simple-login.steps.ts",
       "./e2e/hooks/hooks.ts"
     ],
     "format": [
@@ -44,7 +44,7 @@
       "ts-node/register"
     ],
     "require": [
-      "./e2e/step_definitions/pattern-based.steps.ts",
+      "./e2e/step_definitions/simple-login.steps.ts",
       "./e2e/hooks/hooks.ts"
     ],
     "format": [

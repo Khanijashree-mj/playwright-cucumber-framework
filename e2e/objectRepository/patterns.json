@@ -1,183 +1,139 @@
 {
-  "patterns": {
-    "basic": {
-      "inputByName": "//input[@name='{name}']",
-      "inputById": "//input[@id='{id}']",
-      "inputByType": "//input[@type='{type}']",
-      "inputByPlaceholder": "//input[@placeholder='{placeholder}']",
-      "buttonByText": "//button[contains(text(),'{text}')]",
-      "buttonById": "//button[@id='{id}']",
-      "buttonByClass": "//button[contains(@class,'{className}')]",
-      "linkByText": "//a[contains(text(),'{text}')]",
-      "linkByHref": "//a[contains(@href,'{href}')]",
-      "divByClass": "//div[@class='{className}']",
-      "divByText": "//div[contains(text(),'{text}')]",
-      "spanByText": "//span[contains(text(),'{text}')]",
-      "elementById": "//*[@id='{id}']",
-      "elementByClass": "//*[contains(@class,'{className}')]",
-      "elementByAttribute": "//*[@{attribute}='{value}']",
-      "elementByText": "//*[contains(text(),'{text}')]"
+  "version": "2.0.0",
+  "description": "XPath-Based Object Repository",
+  "xpathPatterns": {
+    "input": {
+      "byName": "//input[@name='{name}']",
+      "byId": "//input[@id='{id}']",
+      "byPlaceholder": "//input[@placeholder='{placeholder}']",
+      "byValue": "//input[@value='{value}']",
+      "byType": "//input[@type='{type}']",
+      "byClass": "//input[contains(@class,'{class}')]",
+      "byAttribute": "//input[@{attribute}='{value}']"
+    },
+    "button": {
+      "byText": "//button[text()='{text}']",
+      "byId": "//button[@id='{id}']",
+      "byClass": "//button[contains(@class,'{class}')]",
+      "byType": "//button[@type='{type}']",
+      "byValue": "//button[@value='{value}']",
+      "byContainsText": "//button[contains(text(),'{text}')]",
+      "byAttribute": "//button[@{attribute}='{value}']"
+    },
+    "text": {
+      "byExactText": "//*[text()='{text}']",
+      "byContainsText": "//*[contains(text(),'{text}')]",
+      "byTextAndTag": "//{tag}[text()='{text}']",
+      "byTextContainsAndTag": "//{tag}[contains(text(),'{text}')]"
+    },
+    "div": {
+      "byId": "//div[@id='{id}']",
+      "byClass": "//div[contains(@class,'{class}')]",
+      "byText": "//div[text()='{text}']",
+      "byContainsText": "//div[contains(text(),'{text}')]",
+      "byAttribute": "//div[@{attribute}='{value}']"
+    },
+    "link": {
+      "byText": "//a[text()='{text}']",
+      "byContainsText": "//a[contains(text(),'{text}')]",
+      "byHref": "//a[@href='{href}']",
+      "byId": "//a[@id='{id}']",
+      "byClass": "//a[contains(@class,'{class}')]"
     },
     "form": {
-      "fieldByLabel": "//label[contains(text(),'{label}')]/following-sibling::input",
-      "fieldByLabelId": "//input[@id='{id}' and //label[@for='{id}']]",
-      "selectByName": "//select[@name='{name}']",
-      "optionByText": "//select[@name='{name}']/option[text()='{option}']",
-      "optionByValue": "//select[@name='{name}']/option[@value='{value}']",
-      "checkboxByName": "//input[@type='checkbox' and @name='{name}']",
-      "radioByValue": "//input[@type='radio' and @value='{value}']",
-      "textareaByName": "//textarea[@name='{name}']",
-      "formByAction": "//form[@action='{action}']",
-      "fieldsetByLegend": "//fieldset[legend[contains(text(),'{legend}')]]"
-    },
-    "table": {
-      "tableCell": "//table//tr[{row}]//td[{column}]",
-      "tableCellByHeaderText": "//table//th[contains(text(),'{headerText}')]/ancestor::table//tr[{row}]//td[position()=count(//table//th[contains(text(),'{headerText}')]/preceding-sibling::th)+1]",
-      "rowByText": "//table//tr[td[contains(text(),'{text}')]]",
-      "rowByPosition": "//table//tbody//tr[{position}]",
-      "cellInRowByText": "//table//tr[td[contains(text(),'{rowText}')]]//td[{column}]",
-      "headerByText": "//table//th[contains(text(),'{text}')]",
-      "tableByCaption": "//table[caption[contains(text(),'{caption}')]]"
-    },
-    "navigation": {
-      "menuItemByText": "//nav//a[contains(text(),'{text}')]",
-      "menuItemByLevel": "//nav//ul[{level}]//li[contains(text(),'{menuText}')]",
-      "breadcrumbByText": "//ol[contains(@class,'breadcrumb')]//a[contains(text(),'{text}')]",
-      "tabByText": "//div[contains(@class,'tab')]//a[contains(text(),'{text}')]",
-      "accordionByText": "//div[contains(@class,'accordion')]//div[contains(text(),'{text}')]"
-    },
-    "list": {
-      "listItemByText": "//ul//li[contains(text(),'{text}')]",
-      "listItemByPosition": "//ul//li[{position}]",
-      "nestedListItem": "//ul//li[contains(text(),'{parentText}')]//ul//li[contains(text(),'{childText}')]",
-      "orderedListItem": "//ol//li[{position}]",
-      "descriptionListTerm": "//dl//dt[contains(text(),'{term}')]",
-      "descriptionListDefinition": "//dl//dt[contains(text(),'{term}')]/following-sibling::dd"
-    },
-    "modal": {
-      "modalByTitle": "//div[contains(@class,'modal')]//h1[contains(text(),'{title}')]",
-      "modalButton": "//div[contains(@class,'modal')]//button[contains(text(),'{text}')]",
-      "modalClose": "//div[contains(@class,'modal')]//button[contains(@class,'close')]",
-      "modalContent": "//div[contains(@class,'modal')]//div[contains(@class,'content')]",
-      "overlayModal": "//div[contains(@class,'overlay')]//div[contains(@class,'modal')]"
-    },
-    "dynamic": {
-      "cardByTitle": "//div[contains(@class,'card')]//h1[contains(text(),'{title}')]",
-      "cardByContent": "//div[contains(@class,'card')][contains(.,'{content}')]",
-      "sidebarSection": "//aside//section[h1[contains(text(),'{section}')]]",
-      "contentSection": "//main//section[h1[contains(text(),'{section}')]]",
-      "articleByTitle": "//article[h1[contains(text(),'{title}')]]"
+      "byId": "//form[@id='{id}']",
+      "byClass": "//form[contains(@class,'{class}')]",
+      "byAction": "//form[@action='{action}']"
     }
   },
-  "staticElements": {
-    "page": {
-      "loginForm": "//form[@id='login']",
-      "header": "//header[@class='main-header']",
-      "footer": "//footer[@class='main-footer']",
-      "sidebar": "//aside[@class='sidebar']",
-      "mainContent": "//main[@class='main-content']",
-      "navigation": "//nav[@class='main-nav']"
-    },
-    "login": {
-      "usernameInput": "//input[@id='username']",
-      "passwordInput": "//input[@id='password']", 
-      "submitButton": "//button[@id='submit']",
-      "errorMessage": "//div[@id='error']",
-      "successMessage": "//h1[contains(text(),'Logged In Successfully')]",
-      "forgotPasswordLink": "//a[contains(@href,'forgot')]"
-    }
-  },
-  "templates": {
+  "pageElements": {
     "loginPage": {
       "usernameField": {
-        "pattern": "basic.inputByName",
-        "params": { "name": "username" },
-        "fallback": {
-          "pattern": "basic.inputById",
-          "params": { "id": "username" }
-        }
+        "primary": "input.byName",
+        "parameters": { "name": "username" },
+        "fallback": "input.byId",
+        "fallbackParams": { "id": "username" },
+        "description": "Username input field"
       },
       "passwordField": {
-        "pattern": "basic.inputByName", 
-        "params": { "name": "password" },
-        "fallback": {
-          "pattern": "basic.inputById",
-          "params": { "id": "password" }
-        }
+        "primary": "input.byName",
+        "parameters": { "name": "password" },
+        "fallback": "input.byId",
+        "fallbackParams": { "id": "password" },
+        "description": "Password input field"
       },
       "loginButton": {
-        "pattern": "basic.buttonByText",
-        "params": { "text": "Submit" },
-        "fallback": {
-          "pattern": "basic.buttonById",
-          "params": { "id": "submit" }
-        }
+        "primary": "button.byId",
+        "parameters": { "id": "submit" },
+        "fallback": "button.byText",
+        "fallbackParams": { "text": "Submit" },
+        "description": "Login submit button"
+      },
+      "successMessage": {
+        "primary": "xpath",
+        "locator": "//h1[contains(text(),'Logged In Successfully')]",
+        "description": "Success message after login"
+      },
+      "errorMessage": {
+        "primary": "xpath", 
+        "locator": "//div[@id='error']",
+        "description": "Error message for failed login"
+      },
+      "logoutButton": {
+        "primary": "xpath",
+        "locator": "//a[text()='Log out']",
+        "description": "Logout button on success page"
+      },
+      "loginForm": {
+        "primary": "form.byId",
+        "parameters": { "id": "login" },
+        "fallback": "xpath",
+        "fallbackLocator": "//form[contains(@class,'login')]",
+        "description": "Login form container"
+      },
+      "pageTitle": {
+        "primary": "xpath",
+        "locator": "//title[contains(text(),'Test Login')]",
+        "description": "Login page title"
+      },
+      "headerText": {
+        "primary": "text.byTextAndTag",
+        "parameters": { "tag": "h2", "text": "Test login" },
+        "fallback": "xpath",
+        "fallbackLocator": "//h2[contains(text(),'Test login')]",
+        "description": "Login page header"
       }
     },
-    "dataTable": {
-      "userRow": {
-        "pattern": "table.rowByText",
-        "params": { "text": "{userName}" }
+    "dashboardPage": {
+      "welcomeMessage": {
+        "primary": "text.byContainsText",
+        "parameters": { "text": "Congratulations" },
+        "fallback": "xpath",
+        "fallbackLocator": "//p[contains(text(),'Congratulations')]",
+        "description": "Welcome message on dashboard"
       },
-      "userEmail": {
-        "pattern": "table.cellInRowByText", 
-        "params": { "rowText": "{userName}", "column": "3" }
-      },
-      "editButton": {
-        "pattern": "table.cellInRowByText",
-        "params": { "rowText": "{userName}", "column": "4" },
-        "suffix": "//button[contains(text(),'Edit')]"
-      }
-    },
-    "dynamicContent": {
-      "productCard": {
-        "pattern": "dynamic.cardByTitle",
-        "params": { "title": "{productName}" }
-      },
-      "addToCart": {
-        "pattern": "dynamic.cardByTitle",
-        "params": { "title": "{productName}" },
-        "suffix": "//button[contains(text(),'Add to Cart')]"
-      },
-      "productPrice": {
-        "pattern": "dynamic.cardByTitle",
-        "params": { "title": "{productName}" },
-        "suffix": "//span[contains(@class,'price')]"
+      "logoutLink": {
+        "primary": "link.byText",
+        "parameters": { "text": "Log out" },
+        "fallback": "link.byContainsText",
+        "fallbackParams": { "text": "Log out" },
+        "description": "Logout link on dashboard"
       }
     }
   },
-  "complexPatterns": {
-    "conditionalElements": {
-      "visibleButton": "//button[contains(text(),'{text}') and not(contains(@style,'display:none'))]",
-      "enabledInput": "//input[@name='{name}' and not(@disabled)]",
-      "checkedCheckbox": "//input[@type='checkbox' and @name='{name}' and @checked]"
+  "staticXPaths": {
+    "login": {
+      "successMessage": "//h1[contains(text(),'Logged In Successfully')]",
+      "errorMessage": "//div[@id='error']",
+      "logoutButton": "//a[text()='Log out']",
+      "usernameField": "//input[@name='username']",
+      "passwordField": "//input[@name='password']",
+      "submitButton": "//button[@id='submit']"
     },
-    "hierarchicalElements": {
-      "nestedMenuItem": "//nav//ul[contains(@class,'{parentClass}')]//li[contains(text(),'{parentText}')]//ul//li[contains(text(),'{childText}')]",
-      "sectionWithContent": "//section[h1[contains(text(),'{sectionTitle}')]]//div[contains(text(),'{content}')]",
-      "formFieldInGroup": "//fieldset[legend[contains(text(),'{groupName}')]]//input[@name='{fieldName}']"
-    },
-    "textBasedElements": {
-      "exactTextMatch": "//*[text()='{text}']",
-      "partialTextMatch": "//*[contains(text(),'{text}')]",
-      "textStartsWith": "//*[starts-with(text(),'{text}')]",
-      "textEndsWith": "//*[substring(text(), string-length(text()) - string-length('{text}') + 1) = '{text}']",
-      "caseInsensitiveText": "//*[contains(translate(text(),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'{text}')]"
+    "common": {
+      "loadingSpinner": "//div[contains(@class,'loading')]",
+      "alertMessage": "//div[contains(@class,'alert')]",
+      "closeButton": "//button[contains(@class,'close')]"
     }
-  },
-  "validation": {
-    "requiredPatterns": ["basic", "form", "table"],
-    "patternGroups": {
-      "essential": ["basic.inputByName", "basic.buttonByText", "basic.linkByText"],
-      "forms": ["form.fieldByLabel", "form.selectByName", "form.optionByText"],
-      "tables": ["table.tableCell", "table.rowByText", "table.tableCellByHeaderText"]
-    }
-  },
-  "metadata": {
-    "version": "1.0.0",
-    "description": "Pattern-based object repository for dynamic locator generation",
-    "lastUpdated": "2024-01-01",
-    "totalPatterns": 45,
-    "categories": ["basic", "form", "table", "navigation", "list", "modal", "dynamic"]
   }
 }

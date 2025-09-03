@@ -1,7 +1,6 @@
 import { Page } from "@playwright/test";
-import { PageManager } from "../pages/PageManager";
 
+// Simple page fixture - no PageManager complexity
 export const pageFixture = {
   page: undefined as unknown as Page,
-  pageManager: undefined as unknown as PageManager,
 };

@@ -24,6 +24,7 @@
   "exclude": [
     "node_modules",
     "dist",
-    "test-results"
+    "test-results",
+    "e2e/backup"
   ]
 }

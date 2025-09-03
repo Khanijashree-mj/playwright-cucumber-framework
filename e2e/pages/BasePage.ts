@@ -1,36 +1,37 @@
 import { Page } from "@playwright/test";
+import { CommonFunctions } from "../utils/CommonFunctions";
 
+// Simple Base Page - provides common utilities to all page objects
 export abstract class BasePage {
   protected page: Page;
+  protected common: CommonFunctions;
 
   constructor(page: Page) {
     this.page = page;
+    this.common = new CommonFunctions(page);
   }
 
-  // Common page methods
+  // Essential common methods
   async getPageTitle(): Promise<string> {
-    return await this.page.title();
+    return await this.common.getPageTitle();
   }
 
   async getPageUrl(): Promise<string> {
-    return this.page.url();
+    return await this.common.getCurrentUrl();
   }
 
   async waitForPageLoad(): Promise<void> {
-    await this.page.waitForLoadState("networkidle");
+    await this.common.waitForPageLoad();
   }
 
-  async takeScreenshot(name?: string): Promise<Buffer> {
-    return await this.page.screenshot({ 
-      fullPage: true, 
-      path: name ? `./test-results/screenshots/${name}.png` : undefined 
-    });
+  async takeScreenshot(name?: string): Promise<void> {
+    if (name) {
+      await this.common.takeScreenshot(name);
+    } else {
+      await this.page.screenshot({ fullPage: true });
+    }
   }
 
-  async refreshPage(): Promise<void> {
-    await this.page.reload();
-  }
-
-  // Abstract method that child classes should implement
+  // Abstract method that child classes must implement
   abstract verifyPageIsLoaded(): Promise<void>;
 }

@@ -8,7 +8,6 @@ import {
 } from "@cucumber/cucumber";
 import { pageFixture } from "../fixtures/pageFixture";
 import { Browser, BrowserContext, Page, chromium } from "@playwright/test";
-import { PageManager } from "../pages/PageManager";
 const fs = require("fs-extra");
 
 let browser: Browser;
@@ -36,7 +35,6 @@ Before(async function ({ pickle }) {
   });
   page = await context.newPage();
   pageFixture.page = page;
-  pageFixture.pageManager = new PageManager(page);
 });
 
 AfterStep(async function ({ pickle }) {
