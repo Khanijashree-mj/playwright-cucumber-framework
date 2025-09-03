@@ -1,0 +1,70 @@
+{
+  "validCredentials": {
+    "primary": {
+      "username": "student",
+      "password": "Password123"
+    },
+    "secondary": {
+      "username": "testuser",
+      "password": "Test@123"
+    }
+  },
+  "invalidCredentials": {
+    "emptyUsername": {
+      "username": "",
+      "password": "Password123",
+      "expectedError": "usernameRequired"
+    },
+    "emptyPassword": {
+      "username": "student", 
+      "password": "",
+      "expectedError": "passwordRequired"
+    },
+    "bothEmpty": {
+      "username": "",
+      "password": "",
+      "expectedError": "bothRequired"
+    },
+    "wrongCredentials": {
+      "username": "wronguser",
+      "password": "wrongpass",
+      "expectedError": "invalidCredentials"
+    }
+  },
+  "testScenarios": {
+    "successfulLogin": {
+      "description": "Login with valid credentials",
+      "credentials": "validCredentials.primary",
+      "expectedOutcome": "success"
+    },
+    "missingUsername": {
+      "description": "Login without username",
+      "credentials": "invalidCredentials.emptyUsername",
+      "expectedOutcome": "error"
+    },
+    "missingPassword": {
+      "description": "Login without password", 
+      "credentials": "invalidCredentials.emptyPassword",
+      "expectedOutcome": "error"
+    },
+    "missingBoth": {
+      "description": "Login without username and password",
+      "credentials": "invalidCredentials.bothEmpty",
+      "expectedOutcome": "error"
+    }
+  },
+  "environments": {
+    "dev": {
+      "baseUrl": "https://dev.practicetestautomation.com/practice-test-login",
+      "timeout": 30000
+    },
+    "staging": {
+      "baseUrl": "https://staging.practicetestautomation.com/practice-test-login",
+      "timeout": 45000
+    },
+    "production": {
+      "baseUrl": "https://practicetestautomation.com/practice-test-login",
+      "timeout": 60000
+    }
+  }
+}

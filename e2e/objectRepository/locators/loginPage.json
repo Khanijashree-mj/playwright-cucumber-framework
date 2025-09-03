@@ -1,0 +1,79 @@
+{
+  "page": {
+    "url": "https://practicetestautomation.com/practice-test-login",
+    "title": "Test Login",
+    "loadTimeout": 30000
+  },
+  "elements": {
+    "usernameInput": {
+      "xpath": "//input[@id='username']",
+      "alternateXpath": "//input[@name='username']",
+      "description": "Username input field",
+      "waitStrategy": "visible"
+    },
+    "passwordInput": {
+      "xpath": "//input[@id='password']", 
+      "alternateXpath": "//input[@name='password']",
+      "description": "Password input field",
+      "waitStrategy": "visible"
+    },
+    "loginButton": {
+      "xpath": "//button[@id='submit']",
+      "alternateXpath": "//input[@type='submit']",
+      "description": "Login submit button",
+      "waitStrategy": "clickable"
+    },
+    "successMessage": {
+      "xpath": "//h1[contains(text(),'Logged In Successfully')]",
+      "alternateXpath": "//div[@class='post-title']/h1",
+      "description": "Success message after login",
+      "waitStrategy": "visible"
+    },
+    "errorMessage": {
+      "xpath": "//div[@id='error']",
+      "alternateXpath": "//div[contains(@class,'error')]",
+      "description": "Error message container",
+      "waitStrategy": "visible"
+    },
+    "logoutButton": {
+      "xpath": "//a[contains(@href,'logout')]",
+      "alternateXpath": "//a[text()='Log out']",
+      "description": "Logout button on success page",
+      "waitStrategy": "clickable"
+    },
+    "pageTitle": {
+      "xpath": "//h2[text()='Test login']",
+      "alternateXpath": "//div[@class='entry-title']/h2",
+      "description": "Login page title",
+      "waitStrategy": "visible"
+    },
+    "loginForm": {
+      "xpath": "//form[@id='login']",
+      "alternateXpath": "//form[contains(@class,'login')]",
+      "description": "Login form container",
+      "waitStrategy": "visible"
+    }
+  },
+  "xpathPatterns": {
+    "buttonByText": "//button[contains(text(),'{text}')]",
+    "linkByText": "//a[contains(text(),'{text}')]",
+    "inputByPlaceholder": "//input[@placeholder='{placeholder}']",
+    "elementByText": "//*[contains(text(),'{text}')]",
+    "elementByAttribute": "//*[@{attribute}='{value}']",
+    "childElement": "{parentXpath}//{childTag}",
+    "siblingElement": "{elementXpath}/following-sibling::{tag}",
+    "parentElement": "{elementXpath}/.."
+  },
+  "errorMessages": {
+    "usernameRequired": "Your username is invalid!",
+    "passwordRequired": "Your password is invalid!",
+    "bothRequired": "Your username is invalid!",
+    "invalidCredentials": "Your credentials are invalid!"
+  },
+  "waitStrategies": {
+    "visible": "Element should be visible on page",
+    "clickable": "Element should be clickable",
+    "present": "Element should be present in DOM",
+    "hidden": "Element should be hidden"
+  }
+}
