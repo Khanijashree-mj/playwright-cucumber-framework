@@ -11,5 +11,24 @@
   "node.runtime": "/opt/homebrew/bin/node",
   "npm.packageManager": "npm",
   "typescript.preferences.includePackageJsonAutoImports": "auto",
-  "javascript.preferences.includePackageJsonAutoImports": "auto"
+  "javascript.preferences.includePackageJsonAutoImports": "auto",
+  
+  // Cucumber configuration
+  "cucumberautocomplete.steps": [
+    "e2e/step_definitions/*.ts"
+  ],
+  "cucumberautocomplete.syncfeatures": "e2e/features/*.feature",
+  "cucumberautocomplete.strictGherkinCompletion": true,
+  "cucumberautocomplete.strictGherkinValidation": true,
+  "cucumberautocomplete.smartSnippets": true,
+  "cucumberautocomplete.stepsInvariants": true,
+  
+  // File associations
+  "files.associations": {
+    "*.feature": "feature"
+  },
+  
+  // TypeScript settings
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "typescript.suggest.autoImports": true
 }
