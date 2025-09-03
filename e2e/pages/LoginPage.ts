@@ -64,9 +64,9 @@ export class LoginPage extends BasePage {
     console.log(`🔐 Performing pattern-based login for user: ${username}`);
     
     // Use dynamic patterns instead of templates
-    const usernameResult = this.locatorManager.buildLocator('basic.inputByName', { name: 'username' });
-    const passwordResult = this.locatorManager.buildLocator('basic.inputByName', { name: 'password' });
-    const buttonResult = this.locatorManager.buildLocator('basic.buttonByText', { text: 'Submit' });
+    const usernameResult = this.locatorManager.buildLocator('input.byName', { name: 'username' });
+    const passwordResult = this.locatorManager.buildLocator('input.byName', { name: 'password' });
+    const buttonResult = this.locatorManager.buildLocator('button.byText', { text: 'Submit' });
     
     await this.common.safeFill(`xpath=${usernameResult.locator}`, username);
     await this.common.safeFill(`xpath=${passwordResult.locator}`, password);
