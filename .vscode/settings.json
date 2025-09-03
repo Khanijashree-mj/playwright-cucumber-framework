@@ -1,21 +1,15 @@
 {
-  "editor.formatOnSave": true,
-  "files.eol": "\n",
-  "editor.tabSize": 2,
-  "eslint.format.enable": true,
-  "terminal.integrated.allowChords": false,
-  "workbench.editor.enablePreview": true,
-  "editor.suggestSelection": "first",
-  "editor.formatOnPaste": false, // required
-  "editor.formatOnType": false, // required
-  "editor.formatOnSaveMode": "file", // required to format on save
-  "files.autoSave": "onFocusChange", // optional but recommended
-  "typescript.tsdk": "node_modules/typescript/lib",
-  "typescript.enablePromptUseWorkspaceTsdk": true,
-  "files.associations": {
-    "*.feature": "gherkin"
+  "terminal.integrated.env.osx": {
+    "PATH": "/opt/homebrew/bin:${env:PATH}"
   },
-  "cucumberautocomplete.steps": ["../e2e/step-definitions/*.steps.ts"],
-  "cucumberautocomplete.syncfeatures": "../src/e2e/features/*.feature",
-  "editor.insertSpaces": true
+  "terminal.integrated.env.linux": {
+    "PATH": "/opt/homebrew/bin:${env:PATH}"
+  },
+  "terminal.integrated.env.windows": {
+    "PATH": "/opt/homebrew/bin:${env:PATH}"
+  },
+  "node.runtime": "/opt/homebrew/bin/node",
+  "npm.packageManager": "npm",
+  "typescript.preferences.includePackageJsonAutoImports": "auto",
+  "javascript.preferences.includePackageJsonAutoImports": "auto"
 }
