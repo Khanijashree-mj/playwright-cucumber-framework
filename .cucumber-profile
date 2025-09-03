@@ -1,0 +1,8 @@
+# Cucumber Profile Configuration
+# This helps VS Code Cucumber extension locate step definitions
+
+--require-module ts-node/register
+--require ./e2e/step_definitions/**/*.ts
+--require ./e2e/hooks/**/*.ts
+--format progress-bar
+--format-options {"theme":"hierarchy"}

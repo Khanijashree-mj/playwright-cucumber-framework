@@ -15,13 +15,21 @@
   
   // Cucumber configuration
   "cucumberautocomplete.steps": [
+    "e2e/step_definitions/**/*.ts",
     "e2e/step_definitions/*.ts"
   ],
-  "cucumberautocomplete.syncfeatures": "e2e/features/*.feature",
+  "cucumberautocomplete.syncfeatures": "e2e/features/**/*.feature",
   "cucumberautocomplete.strictGherkinCompletion": true,
   "cucumberautocomplete.strictGherkinValidation": true,
   "cucumberautocomplete.smartSnippets": true,
   "cucumberautocomplete.stepsInvariants": true,
+  "cucumberautocomplete.skipDocStringsFormat": false,
+  "cucumberautocomplete.formatConfOverride": {
+    "And": 3,
+    "Given": 3,  
+    "When": 3,
+    "Then": 3
+  },
   
   // File associations
   "files.associations": {
@@ -30,5 +38,25 @@
   
   // TypeScript settings
   "typescript.preferences.importModuleSpecifier": "relative",
-  "typescript.suggest.autoImports": true
+  "typescript.suggest.autoImports": true,
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "typescript.preferences.includePackageJsonAutoImports": "auto",
+  
+  // Additional Cucumber settings
+  "cucumberautocomplete.gherkinDefinitionPart": "(Given|When|Then)\\(",
+  "cucumberautocomplete.stepRegExSymbol": "\"",
+  "cucumberautocomplete.pages": {
+    "users": "e2e/pages/UserPage.ts",
+    "login": "e2e/pages/LoginPage.ts"
+  },
+  "cucumberautocomplete.customParameters": [
+    {
+      "parameter": "{string}",
+      "value": "\"([^\"]*)\""
+    },
+    {
+      "parameter": "{int}",
+      "value": "(\\d+)"
+    }
+  ]
 }

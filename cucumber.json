@@ -7,8 +7,8 @@
       "./e2e/features/*.feature"
     ],
     "require": [
-      "./e2e/step_definitions/simple-login.steps.ts",
-      "./e2e/hooks/hooks.ts"
+      "./e2e/step_definitions/**/*.ts",
+      "./e2e/hooks/**/*.ts"
     ],
     "format": [
       "progress-bar",
@@ -44,8 +44,8 @@
       "ts-node/register"
     ],
     "require": [
-      "./e2e/step_definitions/simple-login.steps.ts",
-      "./e2e/hooks/hooks.ts"
+      "./e2e/step_definitions/**/*.ts",
+      "./e2e/hooks/**/*.ts"
     ],
     "format": [
       "progress-bar",
