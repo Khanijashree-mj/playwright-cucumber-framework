@@ -34,6 +34,10 @@ Before(async function ({ pickle }) {
     snapshots: true,
   });
   page = await context.newPage();
+  
+  // Maximize the browser window
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  
   pageFixture.page = page;
 });
 

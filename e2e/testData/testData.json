@@ -1,0 +1,128 @@
+{
+  "users": {
+    "gciUser": {
+      "username": "khanijashree.mj@ringcentral.com.gci",
+      "password": "Khani@2412",
+      "description": "GCI organization user",
+      "environment": "GCI"
+    },
+    "devUser": {
+      "username": "khanijashree.mj@ringcentral.com.proservira",
+      "password": "Khani@2412",
+      "description": "Dev (Proservira) organization user",
+      "environment": "Dev"
+    },
+    "bisuatUser": {
+      "username": "kkhanijashree.mj@ringcentral.com.bisuat",
+      "password": "Khani@2412", 
+      "description": "BISUAT organization user",
+      "environment": "BISUAT"
+    },
+    "validUser": {
+      "username": "khanijashree.mj@ringcentral.com.gci",
+      "password": "Khani@2412",
+      "description": "Default valid test user for successful login"
+    }
+  },
+  "Address":{
+    "US": {
+      "City": "Belmont",
+      "State":"california",
+      "Zipcode":"94002",
+      "Street":"#22/1 industrial area",
+      "Country":"United States"
+    },
+    "UK": {
+      "City": "London",
+      "State":"England",
+      "Zipcode":"N1 0NU",
+      "Street":"83 Upper St",
+      "Country":"United Kingdom"
+    },
+    "CA": {
+      "City": "Toronto",
+      "State":"Ontario",
+      "Zipcode":"M5H 2N2",
+      "Street":"100 Queen Street West",
+      "Country":"Canada"
+    },
+    "AU": {
+      "City": "Sydney",
+      "State":"New South Wales",
+      "Zipcode":"2000",
+      "Street":"1 George Street",
+      "Country":"Australia"
+    },
+    "IN": {
+      "City": "Mumbai",
+      "State":"Maharashtra",
+      "Zipcode":"400001",
+      "Street":"Fort District",
+      "Country":"India"
+    }
+  },
+  "forms": {
+    "leadform": {
+      "first_name": "Ignore",
+      "last_name": "testing_automation_script_lead_creating",
+      "company_name": "Ignore_testing_automation_script_lead_creat",
+      "email": "khanijashree.mj@ringcentral.com",
+      "contact_phone":"+16508038000",
+      "lead_source":"ZoomInfo",
+      "website":"www.khaniautomation.com",
+      "lead_owner_name":"Khanijashree MJ"
+    },
+    
+    "registrationForm": {
+      "title": "Registration Form",
+      "firstName": "John",
+      "lastName": "Doe",
+      "email": "john.doe@example.com",
+      "phone": "555-1234"
+    }
+  },
+  "messages": {
+    "success": {
+      "loginSuccess": "Logged In Successfully",
+      "welcomeMessage": "Congratulations",
+      "logoutSuccess": "You have been logged out"
+    },
+    "errors": {
+      "invalidCredentials": "Your username is invalid!",
+      "usernameRequired": "Username is required",
+      "passwordRequired": "Password is required",
+      "loginFailed": "Login failed"
+    }
+  },
+  "urls": {
+    "env":{
+      "Dev":"https://rc--proservira.sandbox.lightning.force.com",
+      "GCI":"https://rc--gci.sandbox.my.salesforce.com",
+      "BISUAT":"https://rc--bisuat.sandbox.my.salesforce.com"
+    }
+    
+  },
+  "timeouts": {
+    "short": 5000,
+    "medium": 10000,
+    "long": 30000,
+    "pageLoad": 60000
+  },
+  "testScenarios": {
+    "positiveLogin": {
+      "user": "validUser",
+      "expectedResult": "success",
+      "expectedUrl": "logged-in-successfully"
+    },
+    "negativeLogin": {
+      "user": "invalidUser", 
+      "expectedResult": "error",
+      "expectedMessage": "invalidCredentials"
+    },
+    "emptyFieldsLogin": {
+      "user": "emptyUser",
+      "expectedResult": "validation_error",
+      "expectedMessage": "usernameRequired"
+    }
+  }
+}

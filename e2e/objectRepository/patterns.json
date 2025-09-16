@@ -7,8 +7,59 @@
       "usernameField": "//input[@id='username']",
       "passwordField": "//input[@id='password']", 
       "loginButton": "//input[@id='Login']",
+      "successMessage": "//h1[contains(text(),'Logged In Successfully')]",
+      "errorMessage": "//div[@id='error']",
+      "logoutButton": "//a[text()='Log out']",
+      "loginForm": "//form[contains(@class,'wp-block-loginout')]",
+      "pageTitle": "//title[contains(text(),'Test Login')]",
+      "headerText": "//h2[contains(text(),'Test login')]"
+    },
+    "leadPage": {
       "leadtab":"//one-app-nav-bar-item-root[@data-id='Lead']",
-      
+      "new_button":"(//a[@title='New'])[1]",
+      "bisuat_new_button":"//button[@name='New']",
+      "next_button":"//button//span[text()='Next']",
+      "lead_first_name":"//input[@name='firstName']",
+      "lead_last_name":"//input[@name='lName']",
+      "lead_company_name":"//input[@name='company']",
+      "lead_email":"//input[@name='email']",
+      "lead_contact_phone":"//input[@name='contactPhoneNumber']",
+      "lead_source_dropdown_btn":"//button[@name='LeadSource']",
+      "lead_source_option":"//lightning-base-combobox-item[.//span[text()='ZoomInfo']]",
+      "lead_employee_range_dropdown_btn":"//button[@aria-label='No. of Employees (Range)']",
+      "lead_employee_range_option":"//lightning-base-combobox-item[@id='combobox-button-48-2-48']",
+      "lead_industry_dropdown_btn":"//button[@name='industry']",
+      "lead_industry_option":"//lightning-base-combobox-item[@data-value='Communications']",
+      "lead_website":"//input[@placeholder='Website']",
+      "lead_search_btn":"(//button[@title='Search'])[1]",
+      "create_new_lead_btn":"(//button[@title='Create New Lead'])[1]",
+      "lead_show_more_option_btn":"(//li//span[text()='Show more actions'])[2]",
+      "lead_change_owner_btn":"//button//span[text()='Change Owner']",
+      "lead_search_user_field":"//input[@placeholder='Search Users...']",
+      "lead_owner":"//lightning-base-combobox-item[.//span[contains(@title,'${leaddata.lead_owner_name}')]]",
+      "change_owner":"//button[text()='Change Owner' and @type='button']",
+      "convert_lead":"//a[span='Convert']",
+      "Details_tab":"//li[@title='Details']",
+      "edit_button":"//button[@title='Edit State']",
+      "billing_country_drp_dwn":"//button[@aria-label='Billing Country']",
+      "fill_city":"//input[@name='City__c']",
+      "fill_Zip":"//input[@name='Zip_Code__c']",
+      "fill_country":"//input[@name='country']",
+      "fill_state":"//input[@name='province']",
+      "fill_street":"//textarea[@name='street']",
+      "save_btn":"//button[@name='SaveEdit']",
+      "state_dropdown_btn":"//button[@aria-label='State']",
+      "state_option_dynamic":"//lightning-base-combobox-item[@data-value='{stateValue}'] | //lightning-base-combobox-item//span[@title='{stateValue}'] | //lightning-base-combobox-item//span[text()='{stateValue}']",
+      "create_new_account_toggle":"//input[@name='Target_Account__c' and @type='checkbox']",
+      "edit_convert_oppty":"//c-cl-opportunity-info//button[.='Edit']",
+      "close_date_input":"//input[@name='closeDate']",
+      "calendar_picker_btn":"//button[@title='Select a date for Close Date']",
+      "country_drp_dwn":"(//c-cl-opportunity-info//select)[1]",
+      "Button_Apply":"//button[.='Apply']",
+      "Button_convert":"//button[.='Convert']"
+    },
+
+      "Toast_message":{
       "successMessage": "//h1[contains(text(),'Logged In Successfully')]",
       "errorMessage": "//div[@id='error']",
       "logoutButton": "//a[text()='Log out']",
@@ -29,27 +80,71 @@
       "byId": "//input[@id='{id}']",
       "byPlaceholder": "//input[@placeholder='{placeholder}']",
       "byType": "//input[@type='{type}']",
-      "byClass": "//input[contains(@class,'{class}')]"
+      "byClass": "//input[contains(@class,'{class}')]",
+      "byLabel": "//label[text()='{labelText}']/following-sibling::input",
+      "byValue": "//input[@value='{value}']"
     },
     "button": {
       "byText": "//button[text()='{text}']",
+      "byContainsText": "//button[contains(text(),'{text}')]",
       "byId": "//button[@id='{id}']",
       "byClass": "//button[contains(@class,'{class}')]",
-      "byType": "//button[@type='{type}']"
+      "byType": "//button[@type='{type}']",
+      "byName": "//button[@name='{name}']",
+      "byTitle": "//button[@title='{title}']"
+    },
+    "dropdown": {
+      "selectByText": "//select[@id='{selectId}']//option[text()='{optionText}']",
+      "selectByValue": "//select[@id='{selectId}']//option[@value='{optionValue}']",
+      "selectByName": "//select[@name='{selectName}']//option[text()='{optionText}']",
+      "comboboxOption": "//lightning-base-combobox-item[@data-value='{optionValue}']",
+      "comboboxByText": "//lightning-base-combobox-item[.//span[text()='{optionText}']]"
+    },
+    "salesforce": {
+      "tabByName": "//one-app-nav-bar-item-root[@data-id='{tabName}']",
+      "fieldByName": "//lightning-input[@field-name='{fieldName}']//input",
+      "comboboxButton": "//button[@name='{fieldName}']",
+      "recordTypeOption": "//span[text()='{recordType}']/ancestor::lightning-radio-group-option",
+      "listViewItem": "//a[@title='{itemTitle}']"
     },
     "text": {
       "byExactText": "//*[text()='{text}']",
-      "byContainsText": "//*[contains(text(),'{text}')]"
+      "byContainsText": "//*[contains(text(),'{text}')]",
+      "spanByText": "//span[text()='{text}']",
+      "labelByText": "//label[text()='{text}']",
+      "headingByText": "//h1[text()='{text}'] | //h2[text()='{text}'] | //h3[text()='{text}']"
     },
     "div": {
       "byId": "//div[@id='{id}']",
       "byClass": "//div[contains(@class,'{class}')]",
-      "byText": "//div[text()='{text}']"
+      "byText": "//div[text()='{text}']",
+      "byDataAttribute": "//div[@data-{attribute}='{value}']"
     },
     "link": {
       "byText": "//a[text()='{text}']",
       "byContainsText": "//a[contains(text(),'{text}')]",
-      "byHref": "//a[@href='{href}']"
-    }
+      "byHref": "//a[@href='{href}']",
+      "byTitle": "//a[@title='{title}']"
+    },
+    "table": {
+      "cellByRowColumn": "//table//tr[{rowIndex}]//td[{columnIndex}]",
+      "cellByRowText": "//tr[td[contains(text(),'{rowText}')]]//td[{columnIndex}]",
+      "rowByText": "//tr[td[contains(text(),'{cellText}')]]",
+      "headerByText": "//th[text()='{headerText}']"
+    },
+      "form": {
+        "fieldsetByLegend": "//fieldset[legend[text()='{legendText}']]",
+        "inputInFieldset": "//fieldset[legend[text()='{legendText}']]//*[@name='{fieldName}']",
+        "radioByValue": "//input[@type='radio' and @value='{value}']",
+        "checkboxByValue": "//input[@type='checkbox' and @value='{value}']"
+      },
+      "toggle": {
+        "byName": "//input[@name='{name}' and @role='switch']",
+        "byLabelText": "//label[contains(text(),'{labelText}')]//input[@role='switch']",
+        "byAriaLabel": "//input[@aria-label='{ariaLabel}' and @role='switch']",
+        "lightningToggle": "//lightning-input[contains(@class,'slds-checkbox_toggle')]//input[@role='switch']",
+        "salesforceToggle": "//input[@role='switch' and @type='checkbox']",
+        "toggleByText": "//label[contains(text(),'{toggleText}')]//input[@role='switch']"
+      }
   }
 }

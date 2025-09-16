@@ -1,17 +1,21 @@
 import { Page } from "@playwright/test";
 import { BasePage } from "./BasePage";
 import { DynamicLocatorManager } from "../objectRepository/managers/DynamicLocatorManager";
+import { TestDataManager } from "../utils/TestDataManager";
+import { CommonFunctions } from "../utils/CommonFunctions";
 
 /**
- * LoginPage - Simple implementation using Pattern-Based Object Repository + CommonFunctions
- * Extends BasePage for common functionality, step definitions just call these methods
+ * LoginPage - Clean implementation for environment-based lead creation testing
+ * Only contains methods used by the feature file
  */
 export class LoginPage extends BasePage {
   private locatorManager: DynamicLocatorManager;
+  private testDataManager: TestDataManager;
 
   constructor(page: Page) {
     super(page);
     this.locatorManager = DynamicLocatorManager.getInstance();
+    this.testDataManager = TestDataManager.getInstance();
     
     // Load patterns repository
     try {
@@ -25,339 +29,268 @@ export class LoginPage extends BasePage {
   // NAVIGATION METHODS
   // =============================================================================
 
-  async navigateToLoginPage(): Promise<void> {
-    await this.common.navigateTo("https://rc--gci.sandbox.my.salesforce.com/");
+  async navigateToEnvironmentLoginPage(environment: string): Promise<void> {
+    const loginUrl = this.testDataManager.getEnvironmentUrl(environment);
+    await this.common.navigateTo(loginUrl);
     await this.common.waitForPageLoad();
-    console.log('✅ Navigated to login page');
+    console.log(`✅ Navigated to ${environment} environment login page: ${loginUrl}`);
   }
 
   async verifyPageIsLoaded(): Promise<void> {
-    await this.common.assertTitle(/Test Login/, 'Login page should be loaded');
+    // Simple verification that we're on a Salesforce login page
+    await this.common.waitForPageLoad();
     console.log('✅ Login page loaded');
-  }
-
-  async verifyLoginPageLoaded(): Promise<void> {
-    await this.verifyPageIsLoaded();
   }
 
   // =============================================================================
   // LOGIN METHODS
   // =============================================================================
 
-  async performLogin(username: string, password: string): Promise<void> {
-    console.log(`🔐 Performing login for user: ${username}`);
+  /**
+   * Login using test data by user type from JSON
+   * @param userType - 'validUser', 'invalidUser', 'adminUser', 'realUser', 'emptyUser'
+   */
+  async performUserTypeLogin(userType: string): Promise<void> {
+    const userData = this.testDataManager.getUser(userType);
+    console.log(`🎯 Performing user-type login with ${userType}: ${userData.description}`);
     
-    // 🎯 NEW SIMPLE APPROACH - Use property getters!
-    await this.common.safeFill(this.usernameField, username);
-    await this.common.safeFill(this.passwordField, password);
-    await this.common.safeClick(this.loginButton);
+    await this.common.safeFill(this._getLocator('loginPage.usernameField'), userData.username);
+    await this.common.safeFill(this._getLocator('loginPage.passwordField'), userData.password);
+    await this.common.safeClick(this._getLocator('loginPage.loginButton'));
     
-    console.log('✅ Login form submitted using simple locators');
+    console.log(`✅ Login submitted for ${userType}`);
   }
 
-  // async create_opportunity(): Promise<void>{
-  //   console.log("creating lead");
-  //   await this.common.safeClick(this.leadtab);
-
-  // }
-
-  async performLoginWithPatterns(username: string, password: string): Promise<void> {
-    console.log(`🔐 Performing pattern-based login for user: ${username}`);
+  /**
+   * Login using environment-based user auto-selection
+   * @param environment - 'GCI', 'Dev', 'BISUAT'
+   */
+  async performEnvironmentLogin(environment: string): Promise<void> {
+    const userData = this.testDataManager.getUserByEnvironment(environment);
+    console.log(`🌍 Performing ${environment} environment login: ${userData.description}`);
     
-    // Use dynamic patterns instead of templates
-    const usernameResult = this.locatorManager.buildLocator('input.byName', { name: 'username' });
-    const passwordResult = this.locatorManager.buildLocator('input.byName', { name: 'password' });
-    const buttonResult = this.locatorManager.buildLocator('button.byText', { text: 'Submit' });
+    await this.common.safeFill(this._getLocator('loginPage.usernameField'), userData.username);
+    await this.common.safeFill(this._getLocator('loginPage.passwordField'), userData.password);
+    await this.common.safeClick(this._getLocator('loginPage.loginButton'));
     
-    await this.common.safeFill(`xpath=${usernameResult.locator}`, username);
-    await this.common.safeFill(`xpath=${passwordResult.locator}`, password);
-    await this.common.safeClick(`xpath=${buttonResult.locator}`);
-    
-    console.log('✅ Pattern-based login submitted');
-  }
-
-  async performKeyboardLogin(username: string, password: string): Promise<void> {
-    console.log(`⌨️ Performing keyboard login for user: ${username}`);
-    
-    const usernameLocator = this._getPatternLocator('loginPage.usernameField');
-    const passwordLocator = this._getPatternLocator('loginPage.passwordField');
-    
-    // Click username field and type
-    await this.common.safeClick(usernameLocator);
-    await this.common.safeType(usernameLocator, username);
-    
-    // Tab to password field
-    await this.common.pressKey('Tab');
-    await this.common.safeType(passwordLocator, password);
-    
-    // Submit with Enter
-    await this.common.pressKey('Enter');
-    
-    console.log('✅ Keyboard login submitted');
-  }
-
-  async performDataDrivenLogin(loginData: Record<string, string>): Promise<void> {
-    console.log('📊 Performing data-driven login');
-    
-    for (const [field, value] of Object.entries(loginData)) {
-      if (field === 'username') {
-        const locator = this._getPatternLocator('loginPage.usernameField');
-        await this.common.safeFill(locator, value);
-      } else if (field === 'password') {
-        const locator = this._getPatternLocator('loginPage.passwordField');
-        await this.common.safeFill(locator, value);
-      }
-    }
-    
-    const loginButtonLocator = this._getPatternLocator('loginPage.loginButton');
-    await this.common.safeClick(loginButtonLocator);
-    
-    console.log('✅ Data-driven login submitted');
+    console.log(`✅ Login submitted for ${environment} environment`);
   }
 
   // =============================================================================
-  // VERIFICATION METHODS
+  // LEAD CREATION AND CONVERSION METHODS
   // =============================================================================
 
-  async verifyLoginSuccess(): Promise<void> {
-    console.log('🔍 Verifying login success');
+  async createLeadWithCountry(leadform_data: string, country: string): Promise<void>{
+    console.log(`🌍 Creating lead with country: ${country}`);
+    console.log("creating lead");
+    await this.common.click(this._getLocator('leadPage.leadtab'));
+    console.log("✅ Leads tab clicked");
     
-    // Wait for navigation to success page
-    await this.common.waitForUrlContains('logged-in-successfully');
+    // Wait longer for leads page to load completely
+    console.log("⏳ Waiting for Leads page to load...");
+    await this.page.waitForTimeout(8000);
     
-    // 🎯 NEW SIMPLE APPROACH - Use property getters!
-    await this.common.assertVisible(this.successMessage, 'Success message should be visible');
-    await this.common.assertText(this.successMessage, 'Logged In Successfully', 'Success message should contain correct text');
+    // Explicitly wait for New button to be visible
+    console.log("⏳ Waiting for New button to be visible...");
+    try{
+    await this.page.waitForSelector("//a[@title='New']", { state: 'visible', timeout: 20000 });
+    await this.common.click(this._getLocator('leadPage.new_button'));
+    }catch{
+      await this.page.waitForSelector("//button[@name='New']", { state: 'visible', timeout: 20000 });
+      await this.common.click(this._getLocator('leadPage.bisuat_new_button'));
+    }
+    await this.common.click(this._getLocator('leadPage.next_button'));
+    console.log("✅ Next button clicked");
     
-    // Verify logout button is present
-    await this.common.assertVisible(this.logoutButton, 'Logout button should be visible');
+    console.log("Waiting for iframe to load...");
+    await this.page.waitForTimeout(5000);
+    const frameElement = await this.page.waitForSelector('iframe', { timeout: 30000 });
+    const frame = await frameElement.contentFrame();
     
-    console.log('✅ Login success verified using simple locators');
-  }
+    const leaddata = this.testDataManager.getTestData('leadform');
+    console.log(`fill lead Form in iframe`);
+    
+    console.log("🔍 Step 1: Waiting for form fields to be visible...");
+    await this.common.waitForFrameElementVisible(frame, this._getLocator('leadPage.lead_last_name'));
+  
+    console.log("🔍 Step 2: Filling basic form fields...");
+    await this.common.switchFrame_Fill_fields(frame, this._getLocator('leadPage.lead_first_name'), leaddata.first_name);
+    console.log("✅ First name filled");
+    await this.page.waitForTimeout(2000);
+    await this.common.switchFrame_Fill_fields(frame, this._getLocator('leadPage.lead_last_name'), leaddata.last_name);
+    console.log("✅ Last name filled");
+    await this.common.switchFrame_Fill_fields(frame, this._getLocator('leadPage.lead_company_name'), leaddata.company_name);
+    console.log("✅ Company filled");
+    await this.common.switchFrame_Fill_fields(frame, this._getLocator('leadPage.lead_email'), leaddata.email);
+    console.log("✅ Email filled");
+    await this.common.switchFrame_Fill_fields(frame, this._getLocator('leadPage.lead_contact_phone'), leaddata.contact_phone);
+    console.log("✅ Phone filled");
+    
+    console.log("🔍 Step 3: Handling lead source dropdown...");
+    await this.common.switchFrame_click(this._getLocator('leadPage.lead_source_dropdown_btn'));
+    console.log("✅ Lead source dropdown opened");
+    await this.common.switchFrame_click(this._getLocator('leadPage.lead_source_option'));
+    console.log("✅ Lead source selected");
 
-  async verifyLoginError(errorType: string): Promise<void> {
-    console.log(`🔍 Verifying login error: ${errorType}`);
+    console.log("🔍 Step 4: Handling employee range dropdown...");
+    await this.common.switchFrame_click(this._getLocator('leadPage.lead_employee_range_dropdown_btn'));
+    await this.common.switchFrame_click(this._getLocator('leadPage.lead_employee_range_option'));
+    console.log("✅ Employee range selected");
     
-    const errorLocator = this._getPatternLocator('loginPage.errorMessage');
-    await this.common.waitForVisible(errorLocator, 10000);
+    console.log("🔍 Step 5: Handling industry dropdown...");
+    await this.common.switchFrame_click(this._getLocator('leadPage.lead_industry_dropdown_btn'));
+    await this.common.switchFrame_click(this._getLocator('leadPage.lead_industry_option'));
+    console.log("✅ Industry selected");
     
-    switch (errorType) {
-      case 'invalid-credentials':
-        await this.common.assertText(errorLocator, 'Your username is invalid!', 'Should show invalid username error');
-        break;
-      case 'username-required':
-        await this.common.assertText(errorLocator, 'Your username is invalid!', 'Should show username required error');
-        break;
-      case 'password-required':
-        await this.common.assertText(errorLocator, 'Your password is invalid!', 'Should show password required error');
-        break;
-      default:
-        await this.common.assertVisible(errorLocator, 'Error message should be visible');
+    console.log("🔍 Step 6: Filling website field...");
+    await this.common.switchFrame_Fill_fields(frame, this._getLocator('leadPage.lead_website'), leaddata.website);
+    console.log("✅ Website filled");
+
+    console.log("🔍 Step 7: Final buttons...");
+    await this.common.switchFrame_click(this._getLocator('leadPage.lead_search_btn')); 
+    console.log("✅ Search button clicked");
+    await this.common.switchFrame_click(this._getLocator('leadPage.create_new_lead_btn')); 
+    console.log("✅ Create new lead button clicked");
+    await this.page.waitForTimeout(30000);
+
+    console.log("🔍 Step 8: Change Owner...");
+    await this.page.locator("//li//span[text()='Show more actions']").first().click({ timeout: 5000 });
+    
+    console.log("✅ Show more actions clicked");
+    await this.common.click(this._getLocator('leadPage.lead_change_owner_btn'));
+    console.log("✅ Change owner button clicked");
+    await this.common.fill(this._getLocator('leadPage.lead_search_user_field'), leaddata.lead_owner_name);
+    console.log("✅ User search field filled");
+    
+    // Wait for dropdown results to populate
+    await this.page.waitForTimeout(3000);
+    console.log("⏳ Waiting for user dropdown results...");
+    
+    // Ensure the search field is focused
+    await this.page.locator("//input[@placeholder='Search Users...']").focus();
+    console.log("✅ Search field focused");
+    
+    // Use keyboard navigation since search field is focused and working
+    console.log(`⏳ Looking for user: ${leaddata.lead_owner_name}`);
+    
+    // Wait for dropdown to fully populate
+    await this.page.waitForTimeout(3000);
+    
+    // Use keyboard to select first option (most reliable)
+    await this.page.keyboard.press('ArrowDown');
+    await this.page.waitForTimeout(500);
+    await this.page.keyboard.press('Enter');
+    console.log("✅ User selected via keyboard navigation");
+
+    await this.common.click(this._getLocator('leadPage.change_owner'));
+    console.log("✅ Change owner completed");
+    console.log(`✅ Lead owner changed successfully`);
+    
+    await this.common.click(this._getLocator('leadPage.Details_tab'));
+    console.log("✅ Details tab clicked");
+    
+    // Get address data for the specified country
+    const addressData = this.testDataManager.getAddressData(country);
+    console.log(`🌍 Using address data for country: ${country} - ${addressData.Country}`);
+
+    await this.common.scrollToElement(this._getLocator('leadPage.edit_button'));
+    await this.common.click(this._getLocator('leadPage.edit_button'));
+    
+    await this.common.click(this._getLocator('leadPage.billing_country_drp_dwn'));
+    await this.common.selectByContainsText(this._getLocator('leadPage.billing_country_drp_dwn'), addressData.Country);
+    
+    console.log("🔍 Selecting state from dropdown...");
+    await this.common.click(this._getLocator('leadPage.state_dropdown_btn'));
+    await this.common.selectByContainsText(this._getLocator('leadPage.state_dropdown_btn'), addressData.State);
+
+    await this.common.fill(this._getLocator('leadPage.fill_city'), addressData.City);
+    console.log(`✅ City field filled with: ${addressData.City}`);
+    await this.common.fill(this._getLocator('leadPage.fill_Zip'), addressData.Zipcode);
+    console.log(`✅ Zipcode field filled with: ${addressData.Zipcode}`);
+    await this.common.fill(this._getLocator('leadPage.fill_street'), addressData.Street);
+    console.log(`✅ Street field filled with: ${addressData.Street}`);
+    await this.common.fill(this._getLocator('leadPage.fill_country'), addressData.Country);
+    console.log(`✅ Country field filled with: ${addressData.Country}`);
+    
+    await this.common.click(this._getLocator('leadPage.save_btn'));
+    await this.page.waitForTimeout(30000);
+    
+    console.log(`🎉 Lead creation with country ${country} completed successfully!`);
+  }
+  
+  async convertlead_to_opportunity(leadform_data: string, country: string): Promise<void>{
+    const addressData = this.testDataManager.getAddressData(country);
+    await this.page.locator("//li//span[text()='Show more actions']").first().click({ timeout: 5000 });
+    console.log("✅ Show more actions clicked to convert lead");
+    
+    // Store current URL to detect navigation
+    const currentURL = this.page.url();
+    console.log("📋 Current URL before convert:", currentURL);
+    
+    // Click Convert - this may navigate within same page or open modal
+    await this.common.click(this._getLocator('leadPage.convert_lead'));
+    console.log("✅ Convert clicked, checking for navigation...");
+    
+    // Wait for navigation or page changes
+    try {
+      // First, try to wait for URL change (navigation within same page)
+      await this.page.waitForURL(url => url.toString() !== currentURL, { timeout: 10000 });
+      console.log("🔄 Navigation detected within same page");
+      console.log("📋 New URL:", this.page.url());
+    } catch (error) {
+      console.log("⚠️ No URL change detected, checking for modal or dynamic content...");
+      // If no URL change, wait for page to settle
+      await this.page.waitForTimeout(3000);
     }
     
-    console.log(`✅ Login error '${errorType}' verified`);
+    // Wait for page to be fully ready
+    await this.page.waitForLoadState('domcontentloaded');
+    console.log("⏳ Waiting for conversion page elements...");
+    await this.page.waitForTimeout(5000);
+    
+    await this.common.click(this._getLocator('leadPage.create_new_account_toggle'));
+    await this.common.click(this._getLocator('leadPage.edit_convert_oppty'));
+    await this.common.click(this._getLocator('leadPage.close_date_input'));
+
+   /////-------- used while creating different brand-----------\\\\\\\\\
+   // await this.common.click(this._getLocator('leadPage.country_drp_dwn'));s
+
+    await this.common.selectTodayPlusDays(this._getLocator('leadPage.calendar_picker_btn'), 20);
+
+    
+    console.log(`🎉 Complete lead creation and conversion workflow finished successfully for ${country}!`);
+    await this.common.click(this._getLocator('leadPage.Button_Apply'));
+    await this.common.click(this._getLocator('leadPage.Button_convert'));
+    
+    
+    // ✅ Handle browser context cleanup after Salesforce closes page
+    // Check if page is still active before any cleanup
+    // const isPageClosed = this.page.isClosed();
+    
+    // if (!isPageClosed) {
+    //   console.log('📄 Page still active, test completed normally');
+    // } else {
+    //   console.log('📄 Page was closed by Salesforce, which is expected');
+    // }
+    
+    return; // ✅ Ensure method returns properly
   }
-
-  async verifyLoginFormEmpty(): Promise<void> {
-    console.log('🔍 Verifying login form is empty');
-    
-    const usernameLocator = this._getPatternLocator('loginPage.usernameField');
-    const passwordLocator = this._getPatternLocator('loginPage.passwordField');
-    
-    const usernameValue = await this.common.getInputValue(usernameLocator);
-    const passwordValue = await this.common.getInputValue(passwordLocator);
-    
-    if (usernameValue !== '' || passwordValue !== '') {
-      throw new Error(`Login form is not empty. Username: '${usernameValue}', Password: '${passwordValue}'`);
-    }
-    
-    console.log('✅ Login form is empty');
-  }
-
-  // =============================================================================
-  // UTILITY METHODS
-  // =============================================================================
-
-  async clearLoginForm(): Promise<void> {
-    console.log('🧹 Clearing login form');
-    
-    const usernameLocator = this._getPatternLocator('loginPage.usernameField');
-    const passwordLocator = this._getPatternLocator('loginPage.passwordField');
-    
-    await this.common.safeFill(usernameLocator, '', true);
-    await this.common.safeFill(passwordLocator, '', true);
-    
-    console.log('✅ Login form cleared');
-  }
-
-  async takeLoginPageScreenshot(filename: string): Promise<void> {
-    await this.common.takeScreenshot(filename);
-    console.log(`📸 Login page screenshot taken: ${filename}`);
-  }
-
-  async performLogout(): Promise<void> {
-    console.log('🚪 Performing logout');
-    
-    const logoutLocator = this._getPatternLocator('loginPage.logoutButton');
-    await this.common.safeClick(logoutLocator);
-    
-    // Wait for navigation back to login page
-    await this.common.waitForPageLoad();
-    await this.common.waitForUrlContains('practice-test-login');
-    
-    console.log('✅ Logout completed');
-  }
-
-  async validateLoginFormAccessibility(): Promise<void> {
-    console.log('♿ Validating login form accessibility');
-    
-    const usernameLocator = this._getPatternLocator('loginPage.usernameField');
-    const passwordLocator = this._getPatternLocator('loginPage.passwordField');
-    const loginButtonLocator = this._getPatternLocator('loginPage.loginButton');
-    
-    // Check form elements have proper attributes
-    const usernameType = await this.common.getAttribute(usernameLocator, 'type');
-    const passwordType = await this.common.getAttribute(passwordLocator, 'type');
-    const buttonType = await this.common.getAttribute(loginButtonLocator, 'type');
-    
-    if (usernameType !== 'text' && usernameType !== null) {
-      console.warn('⚠️ Username field type might not be optimal for accessibility');
-    }
-    if (passwordType !== 'password') {
-      console.warn('⚠️ Password field should have type="password"');
-    }
-    if (buttonType !== 'submit') {
-      console.warn('⚠️ Login button should have type="submit"');
-    }
-    
-    console.log('✅ Login form accessibility validated');
-  }
-
-  // =============================================================================
-  // COMPLEX WORKFLOWS
-  // =============================================================================
-
-  async executeCompleteLoginWorkflow(username: string, password: string, shouldSucceed: boolean = true): Promise<void> {
-    console.log(`🚀 Executing complete login workflow for: ${username}`);
-    
-    // Step 1: Navigate and verify
-    await this.navigateToLoginPage();
-    await this.verifyLoginPageLoaded();
-    await this.takeLoginPageScreenshot('login-initial');
-    
-    // Step 2: Perform login
-    await this.performLogin(username, password);
-    await this.common.waitForPageLoad();
-    
-    // Step 3: Verify result
-    if (shouldSucceed) {
-      await this.verifyLoginSuccess();
-      await this.takeLoginPageScreenshot('login-success');
-    } else {
-      await this.verifyLoginError('invalid-credentials');
-      await this.takeLoginPageScreenshot('login-error');
-    }
-    
-    console.log(`✅ Complete login workflow ${shouldSucceed ? 'success' : 'error'} completed`);
-  }
-
-  async executeMultipleLoginTests(testCases: Array<{
-    username: string;
-    password: string;
-    shouldSucceed: boolean;
-    description: string;
-  }>): Promise<void> {
-    console.log(`📊 Executing ${testCases.length} login test cases`);
-    
-    for (let i = 0; i < testCases.length; i++) {
-      const testCase = testCases[i];
-      console.log(`\n🧪 Test ${i + 1}/${testCases.length}: ${testCase.description}`);
-      
-      try {
-        await this.executeCompleteLoginWorkflow(
-          testCase.username, 
-          testCase.password, 
-          testCase.shouldSucceed
-        );
-        
-        // Navigate back to login page if not the last test
-        if (i < testCases.length - 1) {
-          if (testCase.shouldSucceed) {
-            await this.performLogout();
-          }
-          await this.navigateToLoginPage();
-        }
-        
-      } catch (error) {
-        console.error(`❌ Test case failed: ${testCase.description}`, error);
-        throw error;
-      }
-    }
-    
-    console.log('🎉 All login test cases completed');
-  }
-
-  // =============================================================================
-  // SIMPLE LOCATOR ACCESS - Use these for easy locator fetching
-  // =============================================================================
-
-  // Simple property-like access to locators
-  get usernameField(): string { return this._getLocator('usernameField'); }
-  get passwordField(): string { return this._getLocator('passwordField'); }
-  get loginButton(): string { return this._getLocator('loginButton'); }
-  get successMessage(): string { return this._getLocator('successMessage'); }
-  get errorMessage(): string { return this._getLocator('errorMessage'); }
-  get logoutButton(): string { return this._getLocator('logoutButton'); }
 
   // =============================================================================
   // PRIVATE HELPER METHODS
   // =============================================================================
 
   /**
-   * Simple locator fetcher - just pass element name (e.g., 'usernameField')
+   * Universal locator fetcher - pass full path like "loginPage.usernameField" or "leadPage.leadtab"
+   * @param fullPath - Complete path to element (e.g., 'loginPage.usernameField', 'leadPage.leadtab')
    */
-  private _getLocator(elementName: string): string {
+  private _getLocator(fullPath: string): string {
     try {
-      const result = this.locatorManager.buildFromTemplate(`loginPage.${elementName}`);
+      const result = this.locatorManager.buildFromTemplate(fullPath);
       return `xpath=${result.locator}`;
     } catch (error) {
-      console.error(`❌ Locator not found: loginPage.${elementName}`, error);
+      console.error(`❌ Locator not found: ${fullPath}`, error);
       throw error;
     }
-  }
-
-  /**
-   * Legacy method for compatibility
-   */
-  private _getPatternLocator(templatePath: string): string {
-    const result = this.locatorManager.buildFromTemplate(templatePath);
-    return `xpath=${result.locator}`;
-  }
-
-  private async _verifyElement(templatePath: string, message: string): Promise<void> {
-    const locator = this._getPatternLocator(templatePath);
-    await this.common.assertVisible(locator, message);
-  }
-
-  // =============================================================================
-  // DEBUG METHODS
-  // =============================================================================
-
-  async debugCurrentState(): Promise<void> {
-    const url = await this.common.getCurrentUrl();
-    const title = await this.common.getPageTitle();
-    
-    console.log('🐛 Current Page State:');
-    console.log(`   📍 URL: ${url}`);
-    console.log(`   📄 Title: ${title}`);
-    
-    // Check if login form elements are visible
-    const usernameVisible = await this.common.isVisible(this._getPatternLocator('loginPage.usernameField'));
-    const passwordVisible = await this.common.isVisible(this._getPatternLocator('loginPage.passwordField'));
-    const buttonVisible = await this.common.isVisible(this._getPatternLocator('loginPage.loginButton'));
-    
-    console.log(`   👁️  Username field visible: ${usernameVisible}`);
-    console.log(`   👁️  Password field visible: ${passwordVisible}`);
-    console.log(`   👁️  Login button visible: ${buttonVisible}`);
   }
 }

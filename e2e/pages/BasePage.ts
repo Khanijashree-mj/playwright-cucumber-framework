@@ -32,6 +32,9 @@ export abstract class BasePage {
     }
   }
 
+
   // Abstract method that child classes must implement
   abstract verifyPageIsLoaded(): Promise<void>;
 }
+
+
