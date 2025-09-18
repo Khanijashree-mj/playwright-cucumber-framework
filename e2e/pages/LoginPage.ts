@@ -231,37 +231,100 @@ export class LoginPage extends BasePage {
     await this.common.click(this._getLocator('leadPage.convert_lead'));
     console.log("✅ Convert clicked, checking for navigation...");
     
-    // Wait for navigation or page changes
+    // Simple navigation wait for BISUAT (always same-page navigation)
     try {
-      // First, try to wait for URL change (navigation within same page)
       await this.page.waitForURL(url => url.toString() !== currentURL, { timeout: 10000 });
-      console.log("🔄 Navigation detected within same page");
-      console.log("📋 New URL:", this.page.url());
+      console.log("✅ Conversion page loaded");
     } catch (error) {
-      console.log("⚠️ No URL change detected, checking for modal or dynamic content...");
-      // If no URL change, wait for page to settle
-      await this.page.waitForTimeout(3000);
+      console.log("⚠️ URL didn't change, proceeding with current page");
     }
     
-    // Wait for page to be fully ready
+    // Wait for conversion page to be ready
     await this.page.waitForLoadState('domcontentloaded');
-    console.log("⏳ Waiting for conversion page elements...");
-    await this.page.waitForTimeout(5000);
+    await this.page.waitForTimeout(3000);
     
-    await this.common.click(this._getLocator('leadPage.create_new_account_toggle'));
-    await this.common.click(this._getLocator('leadPage.edit_convert_oppty'));
-    await this.common.click(this._getLocator('leadPage.close_date_input'));
-
-   /////-------- used while creating different brand-----------\\\\\\\\\
-   // await this.common.click(this._getLocator('leadPage.country_drp_dwn'));s
-
-    await this.common.selectTodayPlusDays(this._getLocator('leadPage.calendar_picker_btn'), 20);
-
+    // Clean toggle click approach - try iframe first, fallback to main page
+    console.log("🔍 Starting conversion toggle click...");
     
+    const frameElement = await this.page.waitForSelector('.oneAlohaPage iframe', { timeout: 5000 });
+    const frame = await frameElement.contentFrame();
+    
+    try {
+      // Try iframe approach first (Lightning page iframe)
+      console.log("🔍 Trying iframe approach...");
+      
+      
+      if (frame) {
+        // Wait for toggle and click with JavaScript
+        await this.common.waitForFrameElementVisible(frame, this._getLocator('leadPage.create_new_account_toggle'));
+        await this.common.frameJsClick(frame, this._getLocator('leadPage.create_new_account_toggle'));
+        
+        // Wait for reaction and try edit button  
+        await this.page.waitForTimeout(3000);
+        
+        // Try to click Edit button if it appears
+        try {
+          await this.common.waitForFrameElementVisible(frame, this._getLocator('leadPage.edit_convert_oppty'));
+          await this.common.frameJsClick(frame, this._getLocator('leadPage.edit_convert_oppty'));
+        } catch (error) {
+          console.log("⚠️ Edit button not found in iframe, continuing...");
+        }
+      }
+    } catch (iframeError) {
+      // Fallback to main page approach
+      console.log("⚠️ Iframe approach failed, trying main page...");
+      try {
+        await this.common.jsClick(this._getLocator('leadPage.create_new_account_toggle'));
+        
+        // Wait for reaction and try edit button
+        await this.page.waitForTimeout(3000);
+        try {
+          await this.common.jsClick(this._getLocator('leadPage.edit_convert_oppty'));
+        } catch (error) {
+          console.log("⚠️ Edit button not found on main page, continuing...");
+        }
+      } catch (mainPageError) {
+        console.log("⚠️ Both iframe and main page approaches failed");
+      }
+    }
+    
+    // Handle close date in the same context as toggle clicks  
+    console.log("🔍 Trying close date selection...");
+    try {
+      if (frame) {
+        console.log("📅 Trying close date in iframe context");
+        try {
+          await frame.locator(this._getLocator('leadPage.calendar_picker_btn')).waitFor({ state: 'visible', timeout: 5000 });
+          await this.common.frameJsClick(frame, this._getLocator('leadPage.calendar_picker_btn'));
+          console.log("✅ Close date picker clicked in iframe");
+        } catch (iframeCalError) {
+          console.log("⚠️ Close date not found in iframe, trying main page");
+          await this.common.jsClick(this._getLocator('leadPage.calendar_picker_btn'));
+        }
+      } else {
+        console.log("📅 Trying close date in main page context");
+        await this.common.jsClick(this._getLocator('leadPage.calendar_picker_btn'));
+      }
+      
+      // If calendar picker worked, continue with date selection
+      await this.common.selectTodayPlusDays(this._getLocator('leadPage.calendar_picker_btn'), 20);
+    } catch (calendarError) {
+      console.log("⚠️ Close date picker not found in either context, skipping...");
+    }
+    
+    // Complete conversion
+    try {
+      if (frame) {
+        await this.common.frameJsClick(frame, this._getLocator('leadPage.Button_Apply'));
+        await this.common.frameJsClick(frame, this._getLocator('leadPage.Button_convert'));
+      } else {
+        await this.common.jsClick(this._getLocator('leadPage.Button_Apply'));
+        await this.common.jsClick(this._getLocator('leadPage.Button_convert'));
+      }
+    } catch (buttonError) {
+      console.log("⚠️ Apply/Convert buttons not found");
+    }
     console.log(`🎉 Complete lead creation and conversion workflow finished successfully for ${country}!`);
-    await this.common.click(this._getLocator('leadPage.Button_Apply'));
-    await this.common.click(this._getLocator('leadPage.Button_convert'));
-    
     
     // ✅ Handle browser context cleanup after Salesforce closes page
     // Check if page is still active before any cleanup

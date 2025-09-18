@@ -365,6 +365,24 @@ export class CommonFunctions {
   }
 
   /**
+   * JavaScript click to bypass element interception on main page
+   */
+  async jsClick(locator: string): Promise<void> {
+    const cleanLocator = locator.startsWith('xpath=') ? locator.substring(6) : locator;
+    await this.page.locator(cleanLocator).evaluate((el: HTMLElement) => el.click());
+    console.log(`✅ JavaScript clicked: ${cleanLocator}`);
+  }
+
+  /**
+   * JavaScript click inside iframe to bypass element interception
+   */
+  async frameJsClick(frame: any, locator: string): Promise<void> {
+    const cleanLocator = locator.startsWith('xpath=') ? locator.substring(6) : locator;
+    await frame.locator(cleanLocator).evaluate((el: HTMLElement) => el.click());
+    console.log(`✅ JavaScript clicked in iframe: ${cleanLocator}`);
+  }
+
+  /**
    * Scroll to element on main page
    */
   async scrollToElement(locator: string): Promise<void> {

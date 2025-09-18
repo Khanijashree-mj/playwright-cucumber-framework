@@ -50,7 +50,7 @@
       "save_btn":"//button[@name='SaveEdit']",
       "state_dropdown_btn":"//button[@aria-label='State']",
       "state_option_dynamic":"//lightning-base-combobox-item[@data-value='{stateValue}'] | //lightning-base-combobox-item//span[@title='{stateValue}'] | //lightning-base-combobox-item//span[text()='{stateValue}']",
-      "create_new_account_toggle":"//input[@name='Target_Account__c' and @type='checkbox']",
+      "create_new_account_toggle":"//input[@name='createNewAccount' and @type='checkbox']",
       "edit_convert_oppty":"//c-cl-opportunity-info//button[.='Edit']",
       "close_date_input":"//input[@name='closeDate']",
       "calendar_picker_btn":"//button[@title='Select a date for Close Date']",
