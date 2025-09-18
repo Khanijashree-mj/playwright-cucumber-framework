@@ -14,7 +14,15 @@ let browser: Browser;
 let page: Page;
 let context: BrowserContext;
 BeforeAll(async function () {
-  browser = await chromium.launch({ headless: false, slowMo: 50 });
+  browser = await chromium.launch({ 
+    headless: false, 
+    slowMo: 50,
+    args: [
+      '--start-maximized',
+      '--disable-web-security',
+      '--disable-features=VizDisplayCompositor'
+    ]
+  });
   console.log(browser.version);
 });
 Before(async function ({ pickle }) {
@@ -25,6 +33,8 @@ Before(async function ({ pickle }) {
     recordVideo: {
       dir: "test-results/videos",
     },
+    // Use no viewport to fit actual browser window size
+    viewport: null
   });
   await context.tracing.start({
     name: scenarioName,
@@ -35,8 +45,8 @@ Before(async function ({ pickle }) {
   });
   page = await context.newPage();
   
-  // Maximize the browser window
-  await page.setViewportSize({ width: 1920, height: 1080 });
+  // Browser will use actual window size due to viewport: null and --start-maximized
+  console.log(`✅ Browser window configured to fit your screen`);
   
   pageFixture.page = page;
 });

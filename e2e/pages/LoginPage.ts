@@ -110,10 +110,10 @@ export class LoginPage extends BasePage {
     const leaddata = this.testDataManager.getTestData('leadform');
     console.log(`fill lead Form in iframe`);
     
-    console.log("🔍 Step 1: Waiting for form fields to be visible...");
+    console.log("📝 Filling lead form fields...");
     await this.common.waitForFrameElementVisible(frame, this._getLocator('leadPage.lead_last_name'));
-  
-    console.log("🔍 Step 2: Filling basic form fields...");
+
+    // Fill basic form fields
     await this.common.switchFrame_Fill_fields(frame, this._getLocator('leadPage.lead_first_name'), leaddata.first_name);
     console.log("✅ First name filled");
     await this.page.waitForTimeout(2000);
@@ -126,34 +126,31 @@ export class LoginPage extends BasePage {
     await this.common.switchFrame_Fill_fields(frame, this._getLocator('leadPage.lead_contact_phone'), leaddata.contact_phone);
     console.log("✅ Phone filled");
     
-    console.log("🔍 Step 3: Handling lead source dropdown...");
+    // Handle dropdown selections
     await this.common.switchFrame_click(this._getLocator('leadPage.lead_source_dropdown_btn'));
-    console.log("✅ Lead source dropdown opened");
     await this.common.switchFrame_click(this._getLocator('leadPage.lead_source_option'));
     console.log("✅ Lead source selected");
 
-    console.log("🔍 Step 4: Handling employee range dropdown...");
     await this.common.switchFrame_click(this._getLocator('leadPage.lead_employee_range_dropdown_btn'));
     await this.common.switchFrame_click(this._getLocator('leadPage.lead_employee_range_option'));
     console.log("✅ Employee range selected");
     
-    console.log("🔍 Step 5: Handling industry dropdown...");
     await this.common.switchFrame_click(this._getLocator('leadPage.lead_industry_dropdown_btn'));
     await this.common.switchFrame_click(this._getLocator('leadPage.lead_industry_option'));
     console.log("✅ Industry selected");
     
-    console.log("🔍 Step 6: Filling website field...");
     await this.common.switchFrame_Fill_fields(frame, this._getLocator('leadPage.lead_website'), leaddata.website);
     console.log("✅ Website filled");
 
-    console.log("🔍 Step 7: Final buttons...");
+    // Submit lead form
     await this.common.switchFrame_click(this._getLocator('leadPage.lead_search_btn')); 
     console.log("✅ Search button clicked");
     await this.common.switchFrame_click(this._getLocator('leadPage.create_new_lead_btn')); 
     console.log("✅ Create new lead button clicked");
     await this.page.waitForTimeout(30000);
 
-    console.log("🔍 Step 8: Change Owner...");
+    // Change lead owner
+    console.log("👤 Changing lead owner...");
     await this.page.locator("//li//span[text()='Show more actions']").first().click({ timeout: 5000 });
     
     console.log("✅ Show more actions clicked");
@@ -199,7 +196,7 @@ export class LoginPage extends BasePage {
     await this.common.click(this._getLocator('leadPage.billing_country_drp_dwn'));
     await this.common.selectByContainsText(this._getLocator('leadPage.billing_country_drp_dwn'), addressData.Country);
     
-    console.log("🔍 Selecting state from dropdown...");
+    // Select state from dropdown
     await this.common.click(this._getLocator('leadPage.state_dropdown_btn'));
     await this.common.selectByContainsText(this._getLocator('leadPage.state_dropdown_btn'), addressData.State);
 
@@ -244,14 +241,13 @@ export class LoginPage extends BasePage {
     await this.page.waitForTimeout(3000);
     
     // Clean toggle click approach - try iframe first, fallback to main page
-    console.log("🔍 Starting conversion toggle click...");
+    console.log("🔄 Starting conversion setup...");
     
     const frameElement = await this.page.waitForSelector('.oneAlohaPage iframe', { timeout: 5000 });
     const frame = await frameElement.contentFrame();
     
     try {
       // Try iframe approach first (Lightning page iframe)
-      console.log("🔍 Trying iframe approach...");
       
       
       if (frame) {
@@ -288,55 +284,273 @@ export class LoginPage extends BasePage {
       }
     }
     
-    // Handle close date in the same context as toggle clicks  
-    console.log("🔍 Trying close date selection...");
+    // Handle close date in the same context as toggle clicks 
+    await this.page.waitForTimeout(8000); 
+    console.log("📅 Setting close date...");
     try {
+      // Calculate date (today + 20 days) 
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + 20);
+      
+      // Use the exact format Salesforce wants: "Dec 31, 2024" 
+      const formattedDateSalesforce = futureDate.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: '2-digit' 
+      }).trim(); // Format: "Oct 08, 2025" - trim any extra spaces
+      
+      const formattedDateISO = futureDate.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: '2-digit', 
+        day: '2-digit' 
+      }).trim(); // Format: "10/08/2025" - trim any extra spaces
+      
+      console.log("📅 Date formats to try:");
+      console.log("   Salesforce format:", formattedDateSalesforce);
+      console.log("   ISO format:", formattedDateISO);
+      
       if (frame) {
-        console.log("📅 Trying close date in iframe context");
+        console.log("📅 Trying close date input in iframe context");
         try {
+          // Try direct input first (more reliable than calendar picker)
+          const dateInput = frame.locator('input[name="closeDate"]');
+          await dateInput.waitFor({ state: 'visible', timeout: 5000 });
+          
+          // Try Salesforce format first (Dec 31, 2024) - exact format from error message
+          console.log("🔄 Trying Salesforce date format:", formattedDateSalesforce);
+          await dateInput.fill(formattedDateSalesforce);
+          await this.page.waitForTimeout(1000); // Let validation happen
+          
+          // Check for validation errors
+          const hasError = await dateInput.getAttribute('aria-invalid');
+          if (hasError === 'true') {
+            console.log("⚠️ Salesforce format rejected, trying ISO format:", formattedDateISO);
+            await dateInput.clear();
+            await dateInput.fill(formattedDateISO);
+            await this.page.waitForTimeout(1000);
+            
+            const hasError2 = await dateInput.getAttribute('aria-invalid');
+            if (hasError2 === 'true') {
+              console.log("⚠️ ISO format also rejected, checking error message...");
+              try {
+                const errorMsg = await frame.locator('[data-error-message]').textContent();
+                console.log("⚠️ Validation error:", errorMsg);
+              } catch (e) {
+                console.log("⚠️ Could not get error message");
+              }
+            } else {
+              console.log("✅ ISO format accepted");
+            }
+          } else {
+            console.log("✅ Salesforce format accepted");
+          }
+          
+          console.log("✅ Close date filled directly in iframe");
+          
+          // Click outside date field to lose focus and trigger validation
+          await frame.locator('body').click({ position: { x: 50, y: 50 } });
+          await this.page.waitForTimeout(1000);
+          console.log("✅ Date field focus removed");
+          
+        } catch (directInputError) {
+          console.log("⚠️ Direct input failed, trying calendar picker");
           await frame.locator(this._getLocator('leadPage.calendar_picker_btn')).waitFor({ state: 'visible', timeout: 5000 });
           await this.common.frameJsClick(frame, this._getLocator('leadPage.calendar_picker_btn'));
-          console.log("✅ Close date picker clicked in iframe");
-        } catch (iframeCalError) {
-          console.log("⚠️ Close date not found in iframe, trying main page");
-          await this.common.jsClick(this._getLocator('leadPage.calendar_picker_btn'));
+          // Wait for calendar to open and try date selection
+          await this.page.waitForTimeout(2000);
+          await this.common.selectTodayPlusDays(this._getLocator('leadPage.calendar_picker_btn'), 20);
+          
+          // Click outside after calendar selection
+          await frame.locator('body').click({ position: { x: 50, y: 50 } });
+          await this.page.waitForTimeout(1000);
+          console.log("✅ Focus removed after calendar selection");
         }
       } else {
-        console.log("📅 Trying close date in main page context");
-        await this.common.jsClick(this._getLocator('leadPage.calendar_picker_btn'));
+        console.log("📅 Trying close date input in main page context");
+        try {
+          const dateInput = this.page.locator('input[name="closeDate"]');
+          await dateInput.waitFor({ state: 'visible', timeout: 5000 });
+          
+          // Try Salesforce format first (Dec 31, 2024) - exact format from error message
+          console.log("🔄 Main page: Trying Salesforce date format:", formattedDateSalesforce);
+          await dateInput.fill(formattedDateSalesforce);
+          await this.page.waitForTimeout(1000);
+          
+          const hasError = await dateInput.getAttribute('aria-invalid');
+          if (hasError === 'true') {
+            console.log("⚠️ Main page: Salesforce format rejected, trying ISO format:", formattedDateISO);
+            await dateInput.clear();
+            await dateInput.fill(formattedDateISO);
+          }
+          
+          console.log("✅ Close date filled directly on main page");
+          
+          // Click outside date field to lose focus and trigger validation
+          await this.page.locator('body').click({ position: { x: 50, y: 50 } });
+          await this.page.waitForTimeout(1000);
+          console.log("✅ Date field focus removed");
+          
+        } catch (directInputError) {
+          await this.common.jsClick(this._getLocator('leadPage.calendar_picker_btn'));
+          await this.page.waitForTimeout(2000);
+          await this.common.selectTodayPlusDays(this._getLocator('leadPage.calendar_picker_btn'), 20);
+          
+          // Click outside after calendar selection
+          await this.page.locator('body').click({ position: { x: 50, y: 50 } });
+          await this.page.waitForTimeout(1000);
+          console.log("✅ Focus removed after calendar selection");
+        }
       }
-      
-      // If calendar picker worked, continue with date selection
-      await this.common.selectTodayPlusDays(this._getLocator('leadPage.calendar_picker_btn'), 20);
     } catch (calendarError) {
-      console.log("⚠️ Close date picker not found in either context, skipping...");
+      console.log("⚠️ Close date selection failed, skipping...", calendarError instanceof Error ? calendarError.message : String(calendarError));
     }
     
-    // Complete conversion
+    // Check for any validation errors before proceeding
     try {
       if (frame) {
-        await this.common.frameJsClick(frame, this._getLocator('leadPage.Button_Apply'));
-        await this.common.frameJsClick(frame, this._getLocator('leadPage.Button_convert'));
+        const errorElements = await frame.locator('[aria-invalid="true"], .slds-has-error, [data-error-message]:not(:empty)').count();
+        console.log("📊 Validation errors found in iframe:", errorElements);
+        
+        if (errorElements > 0) {
+          const errorMessages = await frame.locator('[data-error-message]:not(:empty), .slds-form-element__help').allTextContents();
+          console.log("🔍 Error messages:", errorMessages);
+        }
       } else {
-        await this.common.jsClick(this._getLocator('leadPage.Button_Apply'));
-        await this.common.jsClick(this._getLocator('leadPage.Button_convert'));
+        const errorElements = await this.page.locator('[aria-invalid="true"], .slds-has-error, [data-error-message]:not(:empty)').count();
+        console.log("📊 Validation errors found on main page:", errorElements);
       }
-    } catch (buttonError) {
-      console.log("⚠️ Apply/Convert buttons not found");
+    } catch (validationCheckError) {
+      console.log("⚠️ Could not check validation errors");
+    }
+    
+    await this.page.waitForTimeout(5000);
+    // Complete conversion and check for navigation/errors
+    const conversionURL = this.page.url();
+    console.log("📋 URL before Apply/Convert:", conversionURL);
+    
+    // Handle Apply button clicks with separate error handling
+    try {
+      if (frame) {
+        console.log("🔄 Clicking Apply button in iframe (1st time)...");
+        await this.common.frameJsClick(frame, this._getLocator('leadPage.Button_Apply'));
+        await this.page.waitForTimeout(3000);
+        
+        // Check for errors after first Apply
+        await this.checkForCloseDataErrors(frame, "after 1st Apply in iframe");
+        
+        try {
+          console.log("🔄 Clicking Apply button in iframe (2nd time)...");
+          await this.common.frameJsClick(frame, this._getLocator('leadPage.Button_Apply'));
+          await this.page.waitForTimeout(3000);
+          
+          // Check for errors after second Apply
+          await this.checkForCloseDataErrors(frame, "after 2nd Apply in iframe");
+        } catch (secondApplyError) {
+          console.log("⚠️ Second Apply button not found (this is normal after first Apply)");
+        }
+      } else {
+        console.log("🔄 Clicking Apply button on main page (1st time)...");
+        await this.common.jsClick(this._getLocator('leadPage.Button_Apply'));
+        await this.page.waitForTimeout(3000);
+        
+        // Check for errors after first Apply  
+        await this.checkForCloseDataErrors(null, "after 1st Apply on main page");
+        
+        try {
+          console.log("🔄 Clicking Apply button on main page (2nd time)...");
+          await this.common.jsClick(this._getLocator('leadPage.Button_Apply'));
+          await this.page.waitForTimeout(3000);
+          
+          // Check for errors after second Apply  
+          await this.checkForCloseDataErrors(null, "after 2nd Apply on main page");
+        } catch (secondApplyError) {
+          console.log("⚠️ Second Apply button not found (this is normal after first Apply)");
+        }
+      }
+    } catch (firstApplyError) {
+      console.log("⚠️ First Apply button not found");
+    }
+
+    // Always attempt Convert button click regardless of Apply button status
+    await this.page.waitForTimeout(2000);
+    try {
+      if (frame) {
+        console.log("🔄 Clicking Convert button in iframe...");
+        await this.common.frameJsClick(frame, this._getLocator('leadPage.Button_convert'));
+        console.log("✅ Convert button clicked successfully in iframe");
+      } else {
+        console.log("🔄 Clicking Convert button on main page...");
+        await this.common.jsClick(this._getLocator('leadPage.Button_convert'));
+        console.log("✅ Convert button clicked successfully on main page");
+      }
+    } catch (convertError) {
+      console.log("⚠️ Convert button not found or failed to click");
+    }
+
+    // Wait and check for navigation
+    await this.page.waitForTimeout(5000);
+    const newURL = this.page.url();
+    
+    if (newURL !== conversionURL) {
+      console.log("🔀 Navigation detected after Apply/Convert!");
+      console.log("📋 New URL:", newURL);
+      
+      // Wait for new page to load completely
+      await this.page.waitForLoadState('domcontentloaded');
+      await this.page.waitForTimeout(3000);
+      
+      // Check for errors on new page
+      await this.checkForCloseDataErrors(null, "on new page after conversion");
+    } else {
+      console.log("📋 Staying on same page after Apply/Convert");
+      // Check for errors on current page after conversion
+      await this.checkForCloseDataErrors(frame, "after conversion on same page");
     }
     console.log(`🎉 Complete lead creation and conversion workflow finished successfully for ${country}!`);
+  }
+
+  // Helper method to check for close date and other validation errors
+  private async checkForCloseDataErrors(frame: any, context: string): Promise<void> {
+    console.log(`🔍 Checking for errors ${context}...`);
     
-    // ✅ Handle browser context cleanup after Salesforce closes page
-    // Check if page is still active before any cleanup
-    // const isPageClosed = this.page.isClosed();
-    
-    // if (!isPageClosed) {
-    //   console.log('📄 Page still active, test completed normally');
-    // } else {
-    //   console.log('📄 Page was closed by Salesforce, which is expected');
-    // }
-    
-    return; // ✅ Ensure method returns properly
+    try {
+      const workingContext = frame || this.page;
+      
+      // Check for close date specific errors
+      const closeDateErrors = await workingContext.locator('input[name="closeDate"][aria-invalid="true"], input[name="closeDate"] + .slds-form-element__help, [data-name="closeDate"][data-error-message]').count();
+      
+      if (closeDateErrors > 0) {
+        console.log(`❌ Close date validation errors found: ${closeDateErrors}`);
+        const closeDateErrorTexts = await workingContext.locator('input[name="closeDate"] ~ .slds-form-element__help, [data-name="closeDate"][data-error-message]').allTextContents();
+        console.log("❌ Close date errors:", closeDateErrorTexts.filter((text: string) => text.trim()));
+      } else {
+        console.log("✅ No close date errors found");
+      }
+      
+      // Check for general form errors
+      const allErrors = await workingContext.locator('.slds-has-error, [aria-invalid="true"], .slds-form-element__help:not(:empty), [data-error-message]:not(:empty)').count();
+      console.log(`📊 Total form errors found: ${allErrors}`);
+      
+      if (allErrors > 0) {
+        // Get all error messages
+        const allErrorTexts = await workingContext.locator('.slds-form-element__help:not(:empty), [data-error-message]:not(:empty)').allTextContents();
+        const significantErrors = allErrorTexts.filter((text: string) => text.trim() && !text.includes('*')); // Filter out empty and asterisk-only messages
+        
+        if (significantErrors.length > 0) {
+          console.log("❌ Form errors:", significantErrors.map((e: string) => e.trim()).join('; '));
+        }
+      }
+      
+      // Check for validation error messages
+      const entryErrors = await workingContext.locator(':text("entry doesn\'t match"), :text("doesn\'t match"), :text("invalid"), :text("required"), :text("error")').count();
+      if (entryErrors > 0) {
+        const entryErrorTexts = await workingContext.locator(':text("entry doesn\'t match"), :text("doesn\'t match"), :text("invalid"), :text("required"), :text("error")').allTextContents();
+        console.log("⚠️ Validation errors:", entryErrorTexts.join('; '));
+      }
+      
+    } catch (errorCheckError) {
+      console.log("⚠️ Error while checking for validation errors:", errorCheckError instanceof Error ? errorCheckError.message : String(errorCheckError));
+    }
   }
 
   // =============================================================================

@@ -505,8 +505,8 @@ export class CommonFunctions {
     console.log(`🗓️ Selecting date: ${targetDateString} (${days} days from today)`);
     
     // Click calendar button to open picker
-    await this.click(calendarButtonLocator);
-    await this.page.waitForTimeout(1000);
+    // await this.click(calendarButtonLocator);
+    // await this.page.waitForTimeout(1000);
     
     // Navigate to correct month/year if needed
     await this.navigateToTargetMonth(targetDate);
