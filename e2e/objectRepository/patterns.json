@@ -58,7 +58,10 @@
       "Button_Apply":"//button[.='Apply']",
       "Button_convert":"//button[.='Convert']"
     },
-
+    "OpportunityPage": {
+      "Quote_tab":"//a[.='Quote']",
+      "New_sales_quote":"//button[@data-recordtype='Sales Quote']"
+    },
       "Toast_message":{
       "successMessage": "//h1[contains(text(),'Logged In Successfully')]",
       "errorMessage": "//div[@id='error']",

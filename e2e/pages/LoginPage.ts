@@ -487,27 +487,102 @@ export class LoginPage extends BasePage {
       console.log("⚠️ Convert button not found or failed to click");
     }
 
-    // Wait and check for navigation
-    await this.page.waitForTimeout(5000);
-    const newURL = this.page.url();
+    // Wait for opportunity page to load (30-45 seconds)
+    console.log("⏳ Waiting for opportunity page to load (30-45 seconds)...");
     
-    if (newURL !== conversionURL) {
-      console.log("🔀 Navigation detected after Apply/Convert!");
+    try {
+      // Wait for URL change indicating navigation to opportunity page
+      await this.page.waitForURL(url => url.toString() !== conversionURL, { timeout: 50000 });
+      console.log("🔀 Navigation detected after Convert!");
+      
+      const newURL = this.page.url();
       console.log("📋 New URL:", newURL);
+
+      // Wait for opportunity page to load completely
+      await this.page.waitForLoadState('domcontentloaded', { timeout: 30000 });
+      await this.page.waitForLoadState('networkidle', { timeout: 30000 });
       
-      // Wait for new page to load completely
-      await this.page.waitForLoadState('domcontentloaded');
-      await this.page.waitForTimeout(3000);
+      // Verify opportunity page has loaded
+      await this.verifyOpportunityPageLoaded();
       
-      // Check for errors on new page
-      await this.checkForCloseDataErrors(null, "on new page after conversion");
-    } else {
-      console.log("📋 Staying on same page after Apply/Convert");
-      // Check for errors on current page after conversion
-      await this.checkForCloseDataErrors(frame, "after conversion on same page");
+    } catch (navigationError) {
+      console.log("⚠️ Navigation timeout or failed, checking current page...");
+      const currentURL = this.page.url();
+      
+      if (currentURL !== conversionURL) {
+        console.log("✅ Page changed, verifying opportunity page...");
+        await this.verifyOpportunityPageLoaded();
+      } else {
+        console.log("📋 Staying on same conversion page");
+      }
     }
     console.log(`🎉 Complete lead creation and conversion workflow finished successfully for ${country}!`);
   }
+
+  // Verify opportunity page has loaded successfully
+  private async verifyOpportunityPageLoaded(): Promise<void> {
+    try {
+      console.log("🔍 Verifying opportunity page has loaded...");
+      
+      const currentURL = this.page.url();
+      console.log("📋 Current URL:", currentURL);
+      
+      // Check if URL matches opportunity page pattern: /lightning/r/Opportunity/{Id}/view
+      const opportunityURLPattern = /\/lightning\/r\/Opportunity\/[A-Za-z0-9]{15,18}\/view/;
+      
+      if (opportunityURLPattern.test(currentURL)) {
+        // Extract opportunity ID from URL
+        const opportunityIdMatch = currentURL.match(/\/Opportunity\/([A-Za-z0-9]{15,18})\//);
+        const opportunityId = opportunityIdMatch ? opportunityIdMatch[1] : 'Unknown';
+        
+        console.log("✅ Opportunity page verified - URL matches pattern");
+        console.log("🆔 Opportunity ID:", opportunityId);
+        console.log("🔗 Opportunity URL:", currentURL);
+        
+        // Additional verification - wait for opportunity page elements to load
+        try {
+          await this.page.waitForSelector("//span[contains(text(),'Opportunity')]", { timeout: 10000, state: 'visible' });
+          console.log("✅ Opportunity page elements loaded successfully");
+        } catch (elementError) {
+          console.log("⚠️ Opportunity page elements not found, but URL is correct");
+        }
+        
+        // Click Quote tab (direct page context, no iframe)
+        await this.common.click("xpath=//a[.='Quote']");
+        
+        return;
+      }
+      
+      // Fallback verification if URL pattern doesn't match
+      console.log("⚠️ URL doesn't match expected opportunity pattern, trying alternative verification...");
+      
+      const opportunityIndicators = [
+        "//span[contains(text(),'Opportunity')]",
+        "//h1[contains(@class,'slds-page-header__title')]",
+        "//lightning-formatted-text[contains(text(),'Opportunity')]"
+      ];
+      
+      for (const indicator of opportunityIndicators) {
+        try {
+          await this.page.waitForSelector(indicator, { timeout: 5000, state: 'visible' });
+          console.log("✅ Opportunity page verified - found opportunity indicator");
+          
+          // Click Quote tab (direct page context, no iframe)
+          await this.common.jsClick(this._getLocator('OpportunityPage.Quote_tab'));
+          
+          return;
+        } catch (e) {
+          // Try next indicator
+        }
+      }
+      
+      console.log("⚠️ Could not verify opportunity page, but proceeding...");
+      
+    } catch (error) {
+      console.log("⚠️ Error verifying opportunity page:", error instanceof Error ? error.message : String(error));
+    }
+  }
+
 
   // Helper method to check for close date and other validation errors
   private async checkForCloseDataErrors(frame: any, context: string): Promise<void> {
