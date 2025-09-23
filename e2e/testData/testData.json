@@ -63,8 +63,8 @@
   },
   "forms": {
     "leadform": {
-      "first_name": "Ignore",
-      "last_name": "testing_automation_script_lead_creating",
+      "first_name": "khani",
+      "last_name": "auto test",
       "company_name": "Ignore_testing_automation_script_lead_creat",
       "email": "khanijashree.mj@ringcentral.com",
       "contact_phone":"+16508038000",
@@ -72,6 +72,10 @@
       "website":"www.khaniautomation.com",
       "lead_owner_name":"Khanijashree MJ"
     },
+    "quoteform":{
+
+    },
+  
     
     "registrationForm": {
       "title": "Registration Form",

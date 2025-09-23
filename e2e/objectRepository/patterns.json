@@ -60,7 +60,8 @@
     },
     "OpportunityPage": {
       "Quote_tab":"//a[.='Quote']",
-      "New_sales_quote":"//button[@data-recordtype='Sales Quote']"
+      "New_sales_quote":"//button[@data-ui-auto='add-new-quote' and @data-recordtype='Sales Quote']",
+      "Package_select_button":"//span[contains(@class, 'slds-truncate') and contains(text(), '{PACKAGE_NAME}')]/ancestor::li//div[@class='select']//button"
     },
       "Toast_message":{
       "successMessage": "//h1[contains(text(),'Logged In Successfully')]",

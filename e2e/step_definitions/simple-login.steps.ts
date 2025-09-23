@@ -55,6 +55,14 @@ When("I create lead with country {string}", { timeout: 160000 }, async (country:
   }
 });
 
-When("convert it to {string}", { timeout: 180000 }, async (opportunity: string) =>{
+When("I convert it to {string}", { timeout: 180000 }, async (opportunity: string) =>{
   await loginPage.convertlead_to_opportunity(opportunity, currentCountry); // Use stored country
+});
+
+When("I create new {string}", { timeout: 180000 }, async (quote: string) =>{
+  await loginPage.create_new_quote(quote); // Use stored country
+});
+
+When("I select package {string}", { timeout: 60000 }, async (packageName: string) =>{
+  await loginPage.selectPackage(packageName);
 });

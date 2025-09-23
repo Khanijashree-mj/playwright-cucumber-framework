@@ -12,6 +12,22 @@ export class LoginPage extends BasePage {
   private locatorManager: DynamicLocatorManager;
   private testDataManager: TestDataManager;
 
+  // Page verification patterns
+  private readonly opportunityPattern = /\/lightning\/r\/Opportunity\/[A-Za-z0-9]{15,18}\/view/;
+  private readonly opportunityIndicators = [
+    "//span[contains(text(),'Opportunity')]",
+    "//h1[contains(@class,'slds-page-header__title')]",
+    "//lightning-formatted-text[contains(text(),'Opportunity')]"
+  ];
+  private readonly quotePattern = /\/apex\/QuoteWizard\?id=[A-Za-z0-9]{15,18}&newQuoteType=Sales%20Quote#\/uqt\/package/;
+  private readonly quoteIndicators = [
+    "//span[contains(text(),'Quote')]",
+    "//span[contains(text(),'Sales Quote')]",
+    "//h1[contains(text(),'Quote')]",
+    "//div[contains(@class,'quote')]",
+    "//*[contains(text(),'QuoteWizard')]"
+  ];
+
   constructor(page: Page) {
     super(page);
     this.locatorManager = DynamicLocatorManager.getInstance();
@@ -83,6 +99,43 @@ export class LoginPage extends BasePage {
   async createLeadWithCountry(leadform_data: string, country: string): Promise<void>{
     console.log(`🌍 Creating lead with country: ${country}`);
     console.log("creating lead");
+    
+    // Wait for navigation bar to be fully loaded
+    console.log("⏳ Waiting for navigation bar to load...");
+    await this.page.waitForLoadState('domcontentloaded');
+    await this.page.waitForTimeout(5000);
+    
+    // Wait for Lead tab to be visible before clicking
+    try {
+      await this.page.waitForSelector(this._getLocator('leadPage.leadtab').replace('xpath=', ''), { 
+        state: 'visible', 
+        timeout: 15000 
+      });
+    } catch (error) {
+      console.log("⚠️ Lead tab not found with primary locator, trying alternative...");
+      // Try alternative Lead tab locators
+      const alternativeLeadSelectors = [
+        "//a[contains(@title, 'Lead')]",
+        "//span[text()='Leads']",
+        "//*[@data-id='Lead']",
+        "//a[contains(text(), 'Lead')]"
+      ];
+      
+      for (const selector of alternativeLeadSelectors) {
+        try {
+          await this.page.waitForSelector(selector, { state: 'visible', timeout: 5000 });
+          console.log(`✅ Found Lead tab with alternative selector: ${selector}`);
+          await this.common.click(`xpath=${selector}`);
+          console.log("✅ Leads tab clicked with alternative selector");
+          return;
+        } catch (altError) {
+          continue;
+        }
+      }
+      throw new Error("Could not find Lead tab with any selector");
+    }
+    
+    // Click with primary locator if found
     await this.common.click(this._getLocator('leadPage.leadtab'));
     console.log("✅ Leads tab clicked");
     
@@ -112,7 +165,7 @@ export class LoginPage extends BasePage {
     
     console.log("📝 Filling lead form fields...");
     await this.common.waitForFrameElementVisible(frame, this._getLocator('leadPage.lead_last_name'));
-
+  
     // Fill basic form fields
     await this.common.switchFrame_Fill_fields(frame, this._getLocator('leadPage.lead_first_name'), leaddata.first_name);
     console.log("✅ First name filled");
@@ -425,8 +478,7 @@ export class LoginPage extends BasePage {
     
     await this.page.waitForTimeout(5000);
     // Complete conversion and check for navigation/errors
-    const conversionURL = this.page.url();
-    console.log("📋 URL before Apply/Convert:", conversionURL);
+    
     
     // Handle Apply button clicks with separate error handling
     try {
@@ -435,16 +487,14 @@ export class LoginPage extends BasePage {
         await this.common.frameJsClick(frame, this._getLocator('leadPage.Button_Apply'));
         await this.page.waitForTimeout(3000);
         
-        // Check for errors after first Apply
-        await this.checkForCloseDataErrors(frame, "after 1st Apply in iframe");
+        console.log("✅ First Apply completed");
         
         try {
           console.log("🔄 Clicking Apply button in iframe (2nd time)...");
           await this.common.frameJsClick(frame, this._getLocator('leadPage.Button_Apply'));
           await this.page.waitForTimeout(3000);
           
-          // Check for errors after second Apply
-          await this.checkForCloseDataErrors(frame, "after 2nd Apply in iframe");
+          console.log("✅ Second Apply completed");
         } catch (secondApplyError) {
           console.log("⚠️ Second Apply button not found (this is normal after first Apply)");
         }
@@ -453,16 +503,14 @@ export class LoginPage extends BasePage {
         await this.common.jsClick(this._getLocator('leadPage.Button_Apply'));
         await this.page.waitForTimeout(3000);
         
-        // Check for errors after first Apply  
-        await this.checkForCloseDataErrors(null, "after 1st Apply on main page");
+        console.log("✅ First Apply completed");
         
         try {
           console.log("🔄 Clicking Apply button on main page (2nd time)...");
           await this.common.jsClick(this._getLocator('leadPage.Button_Apply'));
           await this.page.waitForTimeout(3000);
           
-          // Check for errors after second Apply  
-          await this.checkForCloseDataErrors(null, "after 2nd Apply on main page");
+          console.log("✅ Second Apply completed");
         } catch (secondApplyError) {
           console.log("⚠️ Second Apply button not found (this is normal after first Apply)");
         }
@@ -490,143 +538,148 @@ export class LoginPage extends BasePage {
     // Wait for opportunity page to load (30-45 seconds)
     console.log("⏳ Waiting for opportunity page to load (30-45 seconds)...");
     
-    try {
+    
+  }
+
+  
+  async create_new_quote(quoteform: string): Promise<void>{
+      const conversionopptyURL = this.page.url();
+      console.log("📋 URL before Apply/Convert:", conversionopptyURL);
+   
       // Wait for URL change indicating navigation to opportunity page
-      await this.page.waitForURL(url => url.toString() !== conversionURL, { timeout: 50000 });
+      await this.page.waitForURL(url => url.toString() !== conversionopptyURL, { timeout: 50000 });
       console.log("🔀 Navigation detected after Convert!");
       
-      const newURL = this.page.url();
-      console.log("📋 New URL:", newURL);
+      const newopptyURL = this.page.url();
+      console.log("📋 New URL:", newopptyURL);
 
       // Wait for opportunity page to load completely
       await this.page.waitForLoadState('domcontentloaded', { timeout: 30000 });
       await this.page.waitForLoadState('networkidle', { timeout: 30000 });
       
       // Verify opportunity page has loaded
-      await this.verifyOpportunityPageLoaded();
+      await this.verifyPageLoaded('Opportunity', this.opportunityPattern, this.opportunityIndicators, true);
       
-    } catch (navigationError) {
-      console.log("⚠️ Navigation timeout or failed, checking current page...");
-      const currentURL = this.page.url();
+    
+      console.log(`🎉 Complete lead creation and conversion workflow finished successfully`);
+
+    // Click Quote tab (direct page context, no iframe)
+      await this.common.jsClick(this._getLocator('OpportunityPage.Quote_tab'));
+      await this.page.waitForTimeout(30000);
       
-      if (currentURL !== conversionURL) {
-        console.log("✅ Page changed, verifying opportunity page...");
-        await this.verifyOpportunityPageLoaded();
-      } else {
-        console.log("📋 Staying on same conversion page");
-      }
-    }
-    console.log(`🎉 Complete lead creation and conversion workflow finished successfully for ${country}!`);
+      await this.page.waitForSelector('iframe[title="Quote Wizard"]', { timeout: 30000 });
+      const quoteFrame = await this.page.frameLocator('iframe[title="Quote Wizard"]');
+
+      // Wait for new tab/window to open after clicking "Add New"
+      console.log("🔄 Clicking 'Add New' button - expecting new tab to open...");
+      const [newPage] = await Promise.all([
+        this.page.context().waitForEvent('page'), // Wait for new page/tab
+        this.common.frameJsClick(quoteFrame,this._getLocator('OpportunityPage.New_sales_quote'))
+      ]);
+      
+      console.log("🔀 New tab opened - switching focus!");
+      
+      // Switch to the new page
+      await newPage.waitForLoadState('domcontentloaded', { timeout: 30000 });
+      this.page = newPage; // Switch page context
+      
+      const newquoteURL = this.page.url();
+      console.log("📋 New Quote URL:", newquoteURL);
+      
+       // Verify quote page has loaded
+       await this.verifyPageLoaded('Quote', this.quotePattern, this.quoteIndicators, true);
+       console.log("navigated to UQT tab");
+      
   }
 
-  // Verify opportunity page has loaded successfully
-  private async verifyOpportunityPageLoaded(): Promise<void> {
+  // Method to select package by name from examples table
+  async selectPackage(packageName: string): Promise<void> {
     try {
-      console.log("🔍 Verifying opportunity page has loaded...");
+      console.log(`📦 Selecting package: ${packageName}`);
+      
+      // Get the dynamic locator with package name
+      const packageLocator = this._getLocator('OpportunityPage.Package_select_button').replace('{PACKAGE_NAME}', packageName);
+      console.log(`🔍 Looking for package with locator: ${packageLocator}`);
+      
+      // Wait for package to be visible
+      await this.page.waitForSelector(packageLocator, { timeout: 30000 });
+      
+      // Click the select/unselect button
+      await this.common.jsClick(`xpath=${packageLocator}`);
+      
+      console.log(`✅ Successfully selected/toggled package: ${packageName}`);
+      
+    } catch (error) {
+      console.log(`❌ Failed to select package ${packageName}:`, error instanceof Error ? error.message : String(error));
+      throw error;
+    }
+  }
+  // Generic method to verify any new page has loaded successfully
+  private async verifyPageLoaded(pageType: string, urlPattern?: RegExp, pageIndicators?: string[], extractId: boolean = false): Promise<string | void> {
+    try {
+      console.log(`🔍 Verifying ${pageType} page has loaded...`);
       
       const currentURL = this.page.url();
       console.log("📋 Current URL:", currentURL);
       
-      // Check if URL matches opportunity page pattern: /lightning/r/Opportunity/{Id}/view
-      const opportunityURLPattern = /\/lightning\/r\/Opportunity\/[A-Za-z0-9]{15,18}\/view/;
-      
-      if (opportunityURLPattern.test(currentURL)) {
-        // Extract opportunity ID from URL
-        const opportunityIdMatch = currentURL.match(/\/Opportunity\/([A-Za-z0-9]{15,18})\//);
-        const opportunityId = opportunityIdMatch ? opportunityIdMatch[1] : 'Unknown';
+      // Check URL pattern if provided
+      if (urlPattern && urlPattern.test(currentURL)) {
+        console.log(`✅ ${pageType} page verified - URL matches pattern`);
+        console.log(`🔗 ${pageType} URL:`, currentURL);
         
-        console.log("✅ Opportunity page verified - URL matches pattern");
-        console.log("🆔 Opportunity ID:", opportunityId);
-        console.log("🔗 Opportunity URL:", currentURL);
+        // Extract ID from URL if requested
+        let recordId = 'Unknown';
+        if (extractId) {
+          // Try to extract ID from different URL patterns
+          let idMatch = currentURL.match(/\/[A-Za-z0-9]{15,18}\//); // Pattern: /ID/
+          if (idMatch) {
+            recordId = idMatch[0].replace(/\//g, '');
+      } else {
+            // Try to extract ID from query parameter pattern: ?id=ID&
+            idMatch = currentURL.match(/[?&]id=([A-Za-z0-9]{15,18})/);
+            if (idMatch) {
+              recordId = idMatch[1];
+            }
+          }
+          console.log(`🆔 ${pageType} ID:`, recordId);
+        }
         
-        // Additional verification - wait for opportunity page elements to load
+        // Wait for page elements to load
         try {
-          await this.page.waitForSelector("//span[contains(text(),'Opportunity')]", { timeout: 10000, state: 'visible' });
-          console.log("✅ Opportunity page elements loaded successfully");
+          const defaultIndicator = `//span[contains(text(),'${pageType}')]`;
+          await this.page.waitForSelector(defaultIndicator, { timeout: 10000, state: 'visible' });
+          console.log(`✅ ${pageType} page elements loaded successfully`);
         } catch (elementError) {
-          console.log("⚠️ Opportunity page elements not found, but URL is correct");
+          console.log(`⚠️ ${pageType} page elements not found, but URL is correct`);
         }
         
-        // Click Quote tab (direct page context, no iframe)
-        await this.common.click("xpath=//a[.='Quote']");
-        
-        return;
+        return extractId ? recordId : undefined;
       }
       
-      // Fallback verification if URL pattern doesn't match
-      console.log("⚠️ URL doesn't match expected opportunity pattern, trying alternative verification...");
-      
-      const opportunityIndicators = [
-        "//span[contains(text(),'Opportunity')]",
-        "//h1[contains(@class,'slds-page-header__title')]",
-        "//lightning-formatted-text[contains(text(),'Opportunity')]"
-      ];
-      
-      for (const indicator of opportunityIndicators) {
-        try {
-          await this.page.waitForSelector(indicator, { timeout: 5000, state: 'visible' });
-          console.log("✅ Opportunity page verified - found opportunity indicator");
-          
-          // Click Quote tab (direct page context, no iframe)
-          await this.common.jsClick(this._getLocator('OpportunityPage.Quote_tab'));
-          
-          return;
-        } catch (e) {
-          // Try next indicator
+      // Fallback verification using page indicators
+      if (pageIndicators && pageIndicators.length > 0) {
+        console.log(`⚠️ URL pattern not matched, trying ${pageType} element verification...`);
+        
+        for (const indicator of pageIndicators) {
+          try {
+            await this.page.waitForSelector(indicator, { timeout: 5000, state: 'visible' });
+            console.log(`✅ ${pageType} page verified - found page indicator`);
+            return;
+          } catch (e) {
+            // Try next indicator
+          }
         }
       }
       
-      console.log("⚠️ Could not verify opportunity page, but proceeding...");
+      console.log(`⚠️ Could not verify ${pageType} page, but proceeding...`);
       
     } catch (error) {
-      console.log("⚠️ Error verifying opportunity page:", error instanceof Error ? error.message : String(error));
+      console.log(`⚠️ Error verifying ${pageType} page:`, error instanceof Error ? error.message : String(error));
     }
   }
 
 
-  // Helper method to check for close date and other validation errors
-  private async checkForCloseDataErrors(frame: any, context: string): Promise<void> {
-    console.log(`🔍 Checking for errors ${context}...`);
-    
-    try {
-      const workingContext = frame || this.page;
-      
-      // Check for close date specific errors
-      const closeDateErrors = await workingContext.locator('input[name="closeDate"][aria-invalid="true"], input[name="closeDate"] + .slds-form-element__help, [data-name="closeDate"][data-error-message]').count();
-      
-      if (closeDateErrors > 0) {
-        console.log(`❌ Close date validation errors found: ${closeDateErrors}`);
-        const closeDateErrorTexts = await workingContext.locator('input[name="closeDate"] ~ .slds-form-element__help, [data-name="closeDate"][data-error-message]').allTextContents();
-        console.log("❌ Close date errors:", closeDateErrorTexts.filter((text: string) => text.trim()));
-      } else {
-        console.log("✅ No close date errors found");
-      }
-      
-      // Check for general form errors
-      const allErrors = await workingContext.locator('.slds-has-error, [aria-invalid="true"], .slds-form-element__help:not(:empty), [data-error-message]:not(:empty)').count();
-      console.log(`📊 Total form errors found: ${allErrors}`);
-      
-      if (allErrors > 0) {
-        // Get all error messages
-        const allErrorTexts = await workingContext.locator('.slds-form-element__help:not(:empty), [data-error-message]:not(:empty)').allTextContents();
-        const significantErrors = allErrorTexts.filter((text: string) => text.trim() && !text.includes('*')); // Filter out empty and asterisk-only messages
-        
-        if (significantErrors.length > 0) {
-          console.log("❌ Form errors:", significantErrors.map((e: string) => e.trim()).join('; '));
-        }
-      }
-      
-      // Check for validation error messages
-      const entryErrors = await workingContext.locator(':text("entry doesn\'t match"), :text("doesn\'t match"), :text("invalid"), :text("required"), :text("error")').count();
-      if (entryErrors > 0) {
-        const entryErrorTexts = await workingContext.locator(':text("entry doesn\'t match"), :text("doesn\'t match"), :text("invalid"), :text("required"), :text("error")').allTextContents();
-        console.log("⚠️ Validation errors:", entryErrorTexts.join('; '));
-      }
-      
-    } catch (errorCheckError) {
-      console.log("⚠️ Error while checking for validation errors:", errorCheckError instanceof Error ? errorCheckError.message : String(errorCheckError));
-    }
-  }
+
 
   // =============================================================================
   // PRIVATE HELPER METHODS

@@ -6,29 +6,33 @@ Feature: Example-Driven Lead Creation Tests
     Given I navigate to the "<environment>" login page
     When I login as "validUser"
     And I create lead with country "<country>"
-    And convert it to "opportunity"
+    And I convert it to "opportunity"
+    And I create new "sales quote"
+    And I select package "<Office_package_name>"
 
-    # @us
-    # Examples:
-    #   | country | environment |
-    #   | US      | GCI         |
-
-    @uk
+    @us
     Examples:
-      | country | environment |
-      | UK      | BISUAT      |
+      | country | environment | Office_package_name           |
+      | US      | GCI         | RingEX Core™          |
 
-    # @canada
+    # @uk
     # Examples:
-    #   | country | environment |
-    #   | CA      | BISUAT      |
+    #   | country | environment | package_name           |
+    #   | UK      | BISUAT      | RingEX Premium         |
+
+    # @canada  
+    # Examples:
+    #   | country | environment | package_name           |
+    #   | CA      | BISUAT      | RingEX Advanced        |
 
     # @australia
     # Examples:
-    #   | country | environment |
-    #   | AU      | GCI         |
+    #   | country | environment | package_name           |
+    #   | AU      | GCI         | RingEX Enterprise      |
 
-    # @india
+    # @multiple-packages
     # Examples:
-    #   | country | environment |
-    #   | IN      | Dev         |
+    #   | country | environment | package_name           |
+    #   | US      | GCI         | RingEX Core™          |
+    #   | US      | GCI         | RingEX Premium         |
+    #   | US      | GCI         | RingEX Advanced        |
