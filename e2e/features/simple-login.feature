@@ -13,7 +13,7 @@ Feature: Example-Driven Lead Creation Tests
     @us
     Examples:
       | country | environment | Office_package_name           |
-      | US      | GCI         | RingEX Core™          |
+        | US      | GCI         | RingEX Core          |
 
     # @uk
     # Examples:
