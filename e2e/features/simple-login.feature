@@ -8,12 +8,12 @@ Feature: Example-Driven Lead Creation Tests
     And I create lead with country "<country>"
     And I convert it to "opportunity"
     And I create new "sales quote"
-    And I select packages "<Office_package_name>" and "<PS_package_name>"
+    And I select packages "<Office>" and "<Pontact Center>"
 
     @us
     Examples:
-    | country | environment | Office_package_name     | CC_package_name                 |
-    | US      | GCI         | RingEX Premium          | Digital Edition Named Seat (USD)|
+    | country | environment | Office           | Contact Center                 |
+    | US      | GCI         | RingEX Premium   | Digital Edition Named Seat (USD)|
 
     #
      # | country | environment | Office_package_name     | CC_package_name                 | EV_package_name         | ED_package_name                                      | PS_package_name      | Events_package_name    |
