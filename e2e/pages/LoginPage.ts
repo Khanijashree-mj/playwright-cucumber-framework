@@ -598,6 +598,9 @@ export class LoginPage extends BasePage {
       const actualPackage1 = packageName1.includes('-') ? packageName1.split('-')[1].trim() : packageName1.trim();
       const actualPackage2 = packageName2.includes('-') ? packageName2.split('-')[1].trim() : packageName2.trim();
       
+      // Extract header names: If has '-' use part before '-', otherwise use full name  
+      const headerName2 = packageName2.includes('-') ? packageName2.split('-')[0].trim() : packageName2.trim();
+      
       console.log(`📦 Package 1: "${packageName1}" → Select: "${actualPackage1}"`);
       await this.page.waitForTimeout(8000); 
       
@@ -607,11 +610,12 @@ export class LoginPage extends BasePage {
 
       //---------Multi-product quote creation -----------//
       try{
-        console.log(`📦 Package 2: "${packageName2}" → Select: "${actualPackage2}"`);
-        
+        console.log(`📦 Package 2: "${packageName2}" → Header: "${headerName2}" → Select: "${actualPackage2}"`);
+        //-------click on header-------------
+        await this.common.jsClick(this._getLocator('OpportunityPage.Package_group_button').replace('{PACKAGE_NAME}', headerName2));
         // Click specific package select button
         await this.common.jsClick(this._getLocator('OpportunityPage.Package_select_button').replace('{PACKAGE_NAME}', actualPackage2));
-        console.log(`✅ Successfully selected: ${actualPackage2}`);
+        console.log(`✅ Successfully selected: ${actualPackage2} from ${headerName2} group`);
       }
       catch{
         console.log(`single product quote-no other packages found to select`);
