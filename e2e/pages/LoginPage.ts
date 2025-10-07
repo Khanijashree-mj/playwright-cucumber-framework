@@ -607,28 +607,27 @@ export class LoginPage extends BasePage {
       await this.common.jsClick(`xpath=${packageLocator1}`);
       console.log(`✅ Successfully selected package: ${packageName1}`);
 
-      //---------Multiprodcut quote creation -----------//
+      //---------Multi-product quote creation -----------//
       try{
         console.log(`📦 Selecting package: ${packageName2}`);
       
-      // Get the dynamic locator with package name
-      const packageLocator2 = this._getLocator('OpportunityPage.Package_select_button').replace('{PACKAGE_NAME}', packageName2);
-      console.log(`🔍 Looking for package with locator: ${packageLocator2}`);
-      
-      // Wait for package to be visible
-      await this.page.waitForSelector(packageLocator2, { timeout: 30000 });
-      
-      // Click the select/unselect button
-      await this.common.jsClick(`xpath=${packageLocator2}`);
-      console.log(`✅ Successfully selected package: ${packageName2}`);
+        // Get the dynamic locator with package name
+        const packageLocator2 = this._getLocator('OpportunityPage.Package_select_button').replace('{PACKAGE_NAME}', packageName2);
+        console.log(`🔍 Looking for package with locator: ${packageLocator2}`);
+        
+        // Wait for package to be visible
+        await this.page.waitForSelector(packageLocator2, { timeout: 30000 });
+        
+        // Click the select/unselect button
+        await this.common.jsClick(`xpath=${packageLocator2}`);
+        console.log(`✅ Successfully selected package: ${packageName2}`);
       }
       catch{
         console.log(`single product quote-no other packages found to select`);
       }
 
       await this.common.jsClick(this._getLocator('OpportunityPage.save_changes')); 
- 
-    
+      console.log(`✅ Package selection completed and saved`);
   }
   // Generic method to verify any new page has loaded successfully
   private async verifyPageLoaded(pageType: string, urlPattern?: RegExp, pageIndicators?: string[], extractId: boolean = false): Promise<string | void> {
