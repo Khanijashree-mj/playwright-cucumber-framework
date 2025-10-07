@@ -564,7 +564,17 @@ export class LoginPage extends BasePage {
       console.log(`🎉 Complete lead creation and conversion workflow finished successfully`);
 
     // Click Quote tab (direct page context, no iframe)
-      await this.common.jsClick(this._getLocator('OpportunityPage.Quote_tab'));
+      console.log("🔍 Looking for Quote tab...");
+      try {
+        await this.page.waitForSelector(this._getLocator('OpportunityPage.Quote_tab'), { timeout: 30000 });
+        console.log("✅ Quote tab found, clicking...");
+        await this.common.jsClick(this._getLocator('OpportunityPage.Quote_tab'));
+        console.log("✅ Quote tab clicked successfully");
+      } catch (error) {
+        console.log("❌ Quote tab click failed:", error);
+        console.log("🔍 Page URL:", this.page.url());
+        throw error;
+      }
       await this.page.waitForTimeout(30000);
       
       await this.page.waitForSelector('iframe[title="Quote Wizard"]', { timeout: 30000 });
@@ -605,6 +615,7 @@ export class LoginPage extends BasePage {
       await this.page.waitForTimeout(8000); 
       
       // Click specific package select button
+      console.log(`🔍 Looking for: ${this._getLocator('OpportunityPage.Package_select_button').replace('{PACKAGE_NAME}', actualPackage1)}`);
       await this.common.jsClick(this._getLocator('OpportunityPage.Package_select_button').replace('{PACKAGE_NAME}', actualPackage1));
       console.log(`✅ Successfully selected: ${actualPackage1}`);
 

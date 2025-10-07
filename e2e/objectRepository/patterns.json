@@ -59,7 +59,7 @@
       "Button_convert":"//button[.='Convert']"
     },
     "OpportunityPage": {
-      "Quote_tab":"//a[.='Quote']",
+      "Quote_tab":"//a[contains(text(),'Quote')]",
       "New_sales_quote":"//button[@data-ui-auto='add-new-quote' and @data-recordtype='Sales Quote']",
       "Package_group_button":"//package-group[.//span[@class='group-name' and contains(text(), '{PACKAGE_NAME}')]]//button[@type='button']",
       "Package_select_button":"//li[@data-ui-auto='package-item'][contains(., '{PACKAGE_NAME}')]//div[@class='select']//button",
