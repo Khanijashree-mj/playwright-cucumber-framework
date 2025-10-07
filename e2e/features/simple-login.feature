@@ -12,14 +12,18 @@ Feature: Example-Driven Lead Creation Tests
 
     @us
     Examples:
-      | country | environment | Office_package_name  | CC_package_name                 | EV_package_name         | ED_package_name                                      | PS_package_name      | Events_package_name    |
-      | US      | GCI         | RingEX Core          | Digital Edition Named Seat (USD)| RingCX Named Seats (USD)| Engage Digital Standalone concurrent seat based (USD)| Professional Services| RingCentral Events Pro+|
+    | country | environment | Office_package_name     | CC_package_name                 |
+    | US      | GCI         | RingEX Premium          | Digital Edition Named Seat (USD)|
+
+    #
+     # | country | environment | Office_package_name     | CC_package_name                 | EV_package_name         | ED_package_name                                      | PS_package_name      | Events_package_name    |
+      #| US      | GCI         | RingEX Premium          | Digital Edition Named Seat (USD)| RingCX Named Seats (USD)| Engage Digital Standalone concurrent seat based (USD)| Professional Services| RingCentral Events Pro+|
 
 
     # @uk
     # Examples:
     #   | country | environment | package_name           |
-    #   | UK      | BISUAT      | RingEX Premium         |
+    #   | UK      | BISUAT      | RingEX Core          |
 
     # @canada  
     # Examples:

@@ -61,7 +61,7 @@
     "OpportunityPage": {
       "Quote_tab":"//a[.='Quote']",
       "New_sales_quote":"//button[@data-ui-auto='add-new-quote' and @data-recordtype='Sales Quote']",
-      "Package_select_button":"//span[contains(@class, 'slds-truncate') and contains(text(), '{PACKAGE_NAME}')]/ancestor::li//div[@class='select']//button",
+      "Package_group_button":"//span[contains(@class, 'group-name') and contains(text(), '{PACKAGE_NAME}')]/ancestor::button[@type='button']",
       "Add_Products":"//span[text()='Add Products']",
       "save_changes":"//span[text()=' Save Changes ']",
       "Quote_Details":"//span[.='Quote Details']",

@@ -596,30 +596,13 @@ export class LoginPage extends BasePage {
   async selectPackage(packageName1: string, packageName2: string): Promise<void> {
       console.log(`📦 Selecting package: ${packageName1}`);
       
-      // Get the dynamic locator with package name
-      const packageLocator1 = this._getLocator('OpportunityPage.Package_select_button').replace('{PACKAGE_NAME}', packageName1);
-      console.log(`🔍 Looking for package with locator: ${packageLocator1}`);
-      
-      // Wait for package to be visible
-      await this.page.waitForSelector(packageLocator1, { timeout: 30000 });
-      
-      // Click the select/unselect button
-      await this.common.jsClick(`xpath=${packageLocator1}`);
-      console.log(`✅ Successfully selected package: ${packageName1}`);
+      // Try multiple locator strategies for flexibility
+      await this.selectSinglePackage(packageName1);
 
       //---------Multi-product quote creation -----------//
       try{
         console.log(`📦 Selecting package: ${packageName2}`);
-      
-        // Get the dynamic locator with package name
-        const packageLocator2 = this._getLocator('OpportunityPage.Package_select_button').replace('{PACKAGE_NAME}', packageName2);
-        console.log(`🔍 Looking for package with locator: ${packageLocator2}`);
-        
-        // Wait for package to be visible
-        await this.page.waitForSelector(packageLocator2, { timeout: 30000 });
-        
-        // Click the select/unselect button
-        await this.common.jsClick(`xpath=${packageLocator2}`);
+        await this.selectSinglePackage(packageName2);
         console.log(`✅ Successfully selected package: ${packageName2}`);
       }
       catch{
@@ -628,6 +611,52 @@ export class LoginPage extends BasePage {
 
       await this.common.jsClick(this._getLocator('OpportunityPage.save_changes')); 
       console.log(`✅ Package selection completed and saved`);
+  }
+
+  // Helper method to select a single package with multiple fallback strategies
+  private async selectSinglePackage(packageName: string): Promise<void> {
+      const fallbackLocators = [
+        // Strategy 1: Advanced flexible locator with symbol normalization
+        this._getLocator('OpportunityPage.Package_select_button').replace('{PACKAGE_NAME}', packageName),
+        
+        // Strategy 2: Simple contains text match
+        `//li[@data-ui-auto='package-item'][contains(.,'${packageName}')]//div[@class='select']//button`,
+        
+        // Strategy 3: Starts-with approach for partial matches
+        `//li[@data-ui-auto='package-item'][.//span[starts-with(text(),'${packageName}')]]//div[@class='select']//button`,
+        
+        // Strategy 4: Case-insensitive approach
+        `//li[@data-ui-auto='package-item'][.//span[contains(translate(text(),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'${packageName.toLowerCase()}')]]//div[@class='select']//button`,
+        
+        // Strategy 5: Generic button in package item (last resort)
+        `//li[@data-ui-auto='package-item'][position()=1]//div[@class='select']//button`
+      ];
+
+      let success = false;
+      
+      for (let i = 0; i < fallbackLocators.length; i++) {
+        try {
+          const locator = fallbackLocators[i];
+          console.log(`🔍 Trying locator strategy ${i + 1}: ${locator}`);
+          
+          await this.page.waitForSelector(locator, { timeout: 10000 });
+          await this.common.jsClick(`xpath=${locator}`);
+          
+          console.log(`✅ Successfully selected package: ${packageName} with strategy ${i + 1}`);
+          success = true;
+          break;
+          
+        } catch (error) {
+          console.log(`⚠️ Strategy ${i + 1} failed, trying next...`);
+          if (i === fallbackLocators.length - 1) {
+            console.log(`❌ All strategies failed for package: ${packageName}`);
+          }
+        }
+      }
+      
+      if (!success) {
+        throw new Error(`Unable to select package: ${packageName} with any strategy`);
+      }
   }
   // Generic method to verify any new page has loaded successfully
   private async verifyPageLoaded(pageType: string, urlPattern?: RegExp, pageIndicators?: string[], extractId: boolean = false): Promise<string | void> {
