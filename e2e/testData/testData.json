@@ -64,8 +64,8 @@
   "forms": {
     "leadform": {
       "first_name": "khani",
-      "last_name": "auto test",
-      "company_name": "Ignore_testing_automation_script_lead_creat",
+      "last_name": "automation_script",
+      "company_name": "Package_selection_automation_script",
       "email": "khanijashree.mj@ringcentral.com",
       "contact_phone":"+16508038000",
       "lead_source":"ZoomInfo",

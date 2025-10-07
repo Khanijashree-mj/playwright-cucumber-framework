@@ -593,26 +593,42 @@ export class LoginPage extends BasePage {
   }
 
   // Method to select package by name from examples table
-  async selectPackage(packageName: string): Promise<void> {
-    try {
-      console.log(`📦 Selecting package: ${packageName}`);
+  async selectPackage(packageName1: string, packageName2: string): Promise<void> {
+      console.log(`📦 Selecting package: ${packageName1}`);
       
       // Get the dynamic locator with package name
-      const packageLocator = this._getLocator('OpportunityPage.Package_select_button').replace('{PACKAGE_NAME}', packageName);
-      console.log(`🔍 Looking for package with locator: ${packageLocator}`);
+      const packageLocator1 = this._getLocator('OpportunityPage.Package_select_button').replace('{PACKAGE_NAME}', packageName1);
+      console.log(`🔍 Looking for package with locator: ${packageLocator1}`);
       
       // Wait for package to be visible
-      await this.page.waitForSelector(packageLocator, { timeout: 30000 });
+      await this.page.waitForSelector(packageLocator1, { timeout: 30000 });
       
       // Click the select/unselect button
-      await this.common.jsClick(`xpath=${packageLocator}`);
+      await this.common.jsClick(`xpath=${packageLocator1}`);
+      console.log(`✅ Successfully selected package: ${packageName1}`);
+
+      //---------Multiprodcut quote creation -----------//
+      try{
+        console.log(`📦 Selecting package: ${packageName2}`);
       
-      console.log(`✅ Successfully selected/toggled package: ${packageName}`);
+      // Get the dynamic locator with package name
+      const packageLocator2 = this._getLocator('OpportunityPage.Package_select_button').replace('{PACKAGE_NAME}', packageName2);
+      console.log(`🔍 Looking for package with locator: ${packageLocator2}`);
       
-    } catch (error) {
-      console.log(`❌ Failed to select package ${packageName}:`, error instanceof Error ? error.message : String(error));
-      throw error;
-    }
+      // Wait for package to be visible
+      await this.page.waitForSelector(packageLocator2, { timeout: 30000 });
+      
+      // Click the select/unselect button
+      await this.common.jsClick(`xpath=${packageLocator2}`);
+      console.log(`✅ Successfully selected package: ${packageName2}`);
+      }
+      catch{
+        console.log(`single product quote-no other packages found to select`);
+      }
+
+      await this.common.jsClick(this._getLocator('OpportunityPage.save_changes')); 
+ 
+    
   }
   // Generic method to verify any new page has loaded successfully
   private async verifyPageLoaded(pageType: string, urlPattern?: RegExp, pageIndicators?: string[], extractId: boolean = false): Promise<string | void> {
