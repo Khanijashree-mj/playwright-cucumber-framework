@@ -594,19 +594,29 @@ export class LoginPage extends BasePage {
 
   // Method to select package by name from examples table
   async selectPackage(packageName1: string, packageName2: string): Promise<void> {
-      console.log(`📦 Selecting package: ${packageName1}`);
+      // Split package names: Before '-' = Header, After '-' = Actual Package
+      const [headerName1, actualPackage1] = packageName1.split('-').map(s => s.trim());
+      const [headerName2, actualPackage2] = packageName2.split('-').map(s => s.trim());
       
-      // Click first package select button (Select/Unselect button)
-      await this.common.jsClick(this._getLocator('OpportunityPage.Package_select_button').replace('{PACKAGE_NAME}', packageName1));
-      console.log(`✅ Successfully clicked select button for package: ${packageName1}`);
+      console.log(`📦 Package 1: Header="${headerName1}" → Package="${actualPackage1}"`);
+      
+      // Click package group header to open the group
+      await this.common.jsClick(this._getLocator('OpportunityPage.Package_group_button').replace('{PACKAGE_NAME}', headerName1));
+      
+      // Click specific package select button
+      await this.common.jsClick(this._getLocator('OpportunityPage.Package_select_button').replace('{PACKAGE_NAME}', actualPackage1));
+      console.log(`✅ Successfully selected: ${actualPackage1} from ${headerName1} group`);
 
       //---------Multi-product quote creation -----------//
       try{
-        console.log(`📦 Selecting package: ${packageName2}`);
+        console.log(`📦 Package 2: Header="${headerName2}" → Package="${actualPackage2}"`);
         
-        // Click second package select button (Select/Unselect button)
-        await this.common.jsClick(this._getLocator('OpportunityPage.Package_select_button').replace('{PACKAGE_NAME}', packageName2));
-        console.log(`✅ Successfully clicked select button for package: ${packageName2}`);
+        // Click package group header to open the group
+        await this.common.jsClick(this._getLocator('OpportunityPage.Package_group_button').replace('{PACKAGE_NAME}', headerName2));
+        
+        // Click specific package select button
+        await this.common.jsClick(this._getLocator('OpportunityPage.Package_select_button').replace('{PACKAGE_NAME}', actualPackage2));
+        console.log(`✅ Successfully selected: ${actualPackage2} from ${headerName2} group`);
       }
       catch{
         console.log(`single product quote-no other packages found to select`);
@@ -614,6 +624,7 @@ export class LoginPage extends BasePage {
 
       await this.common.jsClick(this._getLocator('OpportunityPage.save_changes')); 
       console.log(`✅ Package selection completed and saved`);
+      await this.page.waitForTimeout(8000); 
   }
   // Generic method to verify any new page has loaded successfully
   private async verifyPageLoaded(pageType: string, urlPattern?: RegExp, pageIndicators?: string[], extractId: boolean = false): Promise<string | void> {
