@@ -596,17 +596,17 @@ export class LoginPage extends BasePage {
   async selectPackage(packageName1: string, packageName2: string): Promise<void> {
       console.log(`📦 Selecting package: ${packageName1}`);
       
-      // Click first package button
-      await this.common.jsClick(this._getLocator('OpportunityPage.Package_group_button').replace('{PACKAGE_NAME}', packageName1));
-      console.log(`✅ Successfully clicked package: ${packageName1}`);
+      // Click first package select button (Select/Unselect button)
+      await this.common.jsClick(this._getLocator('OpportunityPage.Package_select_button').replace('{PACKAGE_NAME}', packageName1));
+      console.log(`✅ Successfully clicked select button for package: ${packageName1}`);
 
       //---------Multi-product quote creation -----------//
       try{
         console.log(`📦 Selecting package: ${packageName2}`);
         
-        // Click second package button
-        await this.common.jsClick(this._getLocator('OpportunityPage.Package_group_button').replace('{PACKAGE_NAME}', packageName2));
-        console.log(`✅ Successfully clicked package: ${packageName2}`);
+        // Click second package select button (Select/Unselect button)
+        await this.common.jsClick(this._getLocator('OpportunityPage.Package_select_button').replace('{PACKAGE_NAME}', packageName2));
+        console.log(`✅ Successfully clicked select button for package: ${packageName2}`);
       }
       catch{
         console.log(`single product quote-no other packages found to select`);
