@@ -594,29 +594,24 @@ export class LoginPage extends BasePage {
 
   // Method to select package by name from examples table
   async selectPackage(packageName1: string, packageName2: string): Promise<void> {
-      // Split package names: Before '-' = Header, After '-' = Actual Package
-      const [headerName1, actualPackage1] = packageName1.split('-').map(s => s.trim());
-      const [headerName2, actualPackage2] = packageName2.split('-').map(s => s.trim());
+      // Split package names: If has '-' use part after '-', otherwise use full name
+      const actualPackage1 = packageName1.includes('-') ? packageName1.split('-')[1].trim() : packageName1.trim();
+      const actualPackage2 = packageName2.includes('-') ? packageName2.split('-')[1].trim() : packageName2.trim();
       
-      console.log(`📦 Package 1: Header="${headerName1}" → Package="${actualPackage1}"`);
-      
-      // Click package group header to open the group
-      await this.common.jsClick(this._getLocator('OpportunityPage.Package_group_button').replace('{PACKAGE_NAME}', headerName1));
+      console.log(`📦 Package 1: "${packageName1}" → Select: "${actualPackage1}"`);
+      await this.page.waitForTimeout(8000); 
       
       // Click specific package select button
       await this.common.jsClick(this._getLocator('OpportunityPage.Package_select_button').replace('{PACKAGE_NAME}', actualPackage1));
-      console.log(`✅ Successfully selected: ${actualPackage1} from ${headerName1} group`);
+      console.log(`✅ Successfully selected: ${actualPackage1}`);
 
       //---------Multi-product quote creation -----------//
       try{
-        console.log(`📦 Package 2: Header="${headerName2}" → Package="${actualPackage2}"`);
-        
-        // Click package group header to open the group
-        await this.common.jsClick(this._getLocator('OpportunityPage.Package_group_button').replace('{PACKAGE_NAME}', headerName2));
+        console.log(`📦 Package 2: "${packageName2}" → Select: "${actualPackage2}"`);
         
         // Click specific package select button
         await this.common.jsClick(this._getLocator('OpportunityPage.Package_select_button').replace('{PACKAGE_NAME}', actualPackage2));
-        console.log(`✅ Successfully selected: ${actualPackage2} from ${headerName2} group`);
+        console.log(`✅ Successfully selected: ${actualPackage2}`);
       }
       catch{
         console.log(`single product quote-no other packages found to select`);
