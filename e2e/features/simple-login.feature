@@ -12,8 +12,9 @@ Feature: Example-Driven Lead Creation Tests
 
     @us
     Examples:
-    | country | environment       | package1                                  | package2                                       |
-    | US      | RingCXdev         | Office-RingEX Premium - Global Unlimited™ | Contact Centre-Digital Edition Named Seat (USD)| 
+    | country | environment | package1              | package2                                       |
+    | US      | RingCXdev         | Office-RingEX Premium | Contact Centre-Digital Edition Named Seat (USD)| 
+
 
     #
      # | country | environment | Office_package_name     | CC_package_name                 | EV_package_name         | ED_package_name                                      | PS_package_name      | Events_package_name    |

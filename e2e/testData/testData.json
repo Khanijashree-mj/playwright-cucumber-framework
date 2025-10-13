@@ -18,7 +18,7 @@
       "description": "BISUAT organization user",
       "environment": "BISUAT"
     },
-    "ringcxdevUser": {
+    "RingCXdev": {
       "username": "khanijashree.mj@ringcentral.com.ringcxdev1",
       "password": "Khani@2412", 
       "description": "RingCXdev organization user",
