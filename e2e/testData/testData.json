@@ -18,11 +18,18 @@
       "description": "BISUAT organization user",
       "environment": "BISUAT"
     },
+    "ringcxdevUser": {
+      "username": "khanijashree.mj@ringcentral.com.ringcxdev1",
+      "password": "Khani@2412", 
+      "description": "RingCXdev organization user",
+      "environment": "RingCXdev"
+    },
     "validUser": {
       "username": "khanijashree.mj@ringcentral.com.gci",
       "password": "Khani@2412",
       "description": "Default valid test user for successful login"
     }
+   
   },
   "Address":{
     "US": {
@@ -102,7 +109,8 @@
     "env":{
       "Dev":"https://rc--proservira.sandbox.lightning.force.com",
       "GCI":"https://rc--gci.sandbox.my.salesforce.com",
-      "BISUAT":"https://rc--bisuat.sandbox.my.salesforce.com"
+      "BISUAT":"https://rc--bisuat.sandbox.my.salesforce.com",
+      "RingCXdev":"https://rc--ringcxdev1.sandbox.my.salesforce.com"
     }
     
   },
