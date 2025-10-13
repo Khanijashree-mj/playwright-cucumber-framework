@@ -4,7 +4,7 @@ Feature: Example-Driven Lead Creation Tests
   @country-examples
   Scenario Outline: Create lead with different countries and environments
     Given I navigate to the "<environment>" login page
-    When I login as "validUser"
+    When I login as "<user>"
     And I create lead with country "<country>"
     And I convert it to "opportunity"
     And I create new "sales quote"
@@ -12,8 +12,8 @@ Feature: Example-Driven Lead Creation Tests
 
     @us
     Examples:
-    | country | environment | package1              | package2                                       |
-    | US      | RingCXdev         | Office-RingEX Premium | Contact Centre-Digital Edition Named Seat (USD)| 
+    | country | environment |user           | package1              | package2                                       |
+    | US      | RingCXdev   |RingCXdev      | Office-RingEX Premium | Contact Centre-Digital Edition Named Seat (USD)| 
 
 
     #
