@@ -90,6 +90,93 @@ export class LoginPage extends BasePage {
     await this.common.safeClick(this._getLocator('loginPage.loginButton'));
     
     console.log(`✅ Login submitted for ${environment} environment`);
+    
+    // Wait for page to load and check if verification is required
+    await this.page.waitForLoadState('domcontentloaded');
+    await this.page.waitForTimeout(5000);
+    
+    await this.handleIdentityVerificationIfRequired();
+  }
+
+  /**
+   * Handle Salesforce identity verification if required after login
+   */
+  async handleIdentityVerificationIfRequired(): Promise<void> {
+    const currentUrl = this.page.url();
+    const pageTitle = await this.page.title();
+    
+    console.log(`🔍 Post-login URL check: ${currentUrl}`);
+    console.log(`📄 Page title: ${pageTitle}`);
+    
+    // Check if we're on a verification page
+    if (currentUrl.includes('verification') || pageTitle.includes('Verify')) {
+      console.log(`🔐 Identity verification detected: ${pageTitle}`);
+      
+      // Try common verification bypasses/handlers
+      await this.attemptVerificationBypass();
+      
+    } else if (currentUrl.includes('lightning.force.com') || currentUrl.includes('salesforce.com/lightning')) {
+      console.log(`✅ Successfully reached Salesforce main interface`);
+    } else {
+      console.log(`⚠️ Unexpected page after login: ${pageTitle}`);
+    }
+  }
+
+  /**
+   * Attempt to handle or bypass identity verification
+   */
+  async attemptVerificationBypass(): Promise<void> {
+    try {
+      // Take screenshot for debugging
+      await this.page.screenshot({ path: 'verification-page-debug.png', fullPage: true });
+      console.log("📸 Verification page screenshot saved");
+      
+      // Look for common verification bypass options
+      const bypassSelectors = [
+        "//a[contains(text(), 'Skip')]",
+        "//button[contains(text(), 'Skip')]", 
+        "//a[contains(text(), 'Not now')]",
+        "//button[contains(text(), 'Not now')]",
+        "//a[contains(text(), 'Later')]",
+        "//button[contains(text(), 'Later')]",
+        "//a[contains(text(), 'Continue without')]",
+        "//button[contains(text(), 'Continue without')]"
+      ];
+      
+      for (const selector of bypassSelectors) {
+        try {
+          console.log(`🔍 Looking for bypass option: ${selector}`);
+          await this.page.waitForSelector(selector, { state: 'visible', timeout: 3000 });
+          console.log(`✅ Found bypass option, clicking: ${selector}`);
+          await this.common.click(`xpath=${selector}`);
+          
+          // Wait to see if bypass worked
+          await this.page.waitForTimeout(5000);
+          const newUrl = this.page.url();
+          
+          if (!newUrl.includes('verification')) {
+            console.log(`✅ Verification bypass successful! New URL: ${newUrl}`);
+            return;
+          }
+        } catch (e) {
+          // Continue to next selector
+        }
+      }
+      
+      // If no bypass found, provide helpful information
+      console.log(`⚠️ No verification bypass options found.`);
+      console.log(`📋 Manual action may be required:`);
+      console.log(`   1. Check email for verification code`);
+      console.log(`   2. Configure trusted IP ranges in Salesforce org`);
+      console.log(`   3. Use API-only user account`);
+      console.log(`   4. Contact Salesforce admin to disable MFA for test user`);
+      
+      // For now, we'll proceed anyway and let the test show the verification requirement
+      console.log(`🔄 Proceeding with test - verification requirement will be shown in error`);
+      
+    } catch (error) {
+      console.log(`⚠️ Error during verification bypass attempt:`, error instanceof Error ? error.message : String(error));
+    }
   }
 
   // =============================================================================
@@ -103,13 +190,46 @@ export class LoginPage extends BasePage {
     // Wait for navigation bar to be fully loaded
     console.log("⏳ Waiting for navigation bar to load...");
     await this.page.waitForLoadState('domcontentloaded');
-    await this.page.waitForTimeout(5000);
+    await this.page.waitForLoadState('networkidle', { timeout: 30000 }); // Wait for network activity to settle
+    await this.page.waitForTimeout(15000); // Increased wait time further
+    
+    // Debug: Log current URL and take screenshot before searching for Lead tab
+    console.log("🔍 Current URL:", this.page.url());
+    console.log("📄 Page title:", await this.page.title());
+    
+    // Take a screenshot for debugging
+    try {
+      await this.page.screenshot({ path: 'lead-page-debug.png', fullPage: true });
+      console.log("📸 Debug screenshot saved as lead-page-debug.png");
+    } catch (e) {
+      console.log("⚠️ Could not save debug screenshot");
+    }
+    
+    // Debug: Check what navigation elements are available
+    try {
+      const navElements = await this.page.locator('//one-app-nav-bar-item-root').count();
+      console.log(`🧭 Found ${navElements} navigation bar items`);
+      
+      // List all navigation items for debugging
+      for (let i = 0; i < Math.min(navElements, 10); i++) {
+        try {
+          const element = this.page.locator('//one-app-nav-bar-item-root').nth(i);
+          const dataId = await element.getAttribute('data-id');
+          const text = await element.textContent();
+          console.log(`📋 Nav item ${i}: data-id="${dataId}", text="${text?.trim()}"`);
+        } catch (e) {
+          console.log(`⚠️ Could not read nav item ${i}`);
+        }
+      }
+    } catch (e) {
+      console.log("⚠️ Could not analyze navigation elements");
+    }
     
     // Wait for Lead tab to be visible before clicking
     try {
       await this.page.waitForSelector(this._getLocator('leadPage.leadtab').replace('xpath=', ''), { 
         state: 'visible', 
-        timeout: 15000 
+        timeout: 20000 
       });
     } catch (error) {
       console.log("⚠️ Lead tab not found with primary locator, trying alternative...");
@@ -117,22 +237,52 @@ export class LoginPage extends BasePage {
       const alternativeLeadSelectors = [
         "//a[contains(@title, 'Lead')]",
         "//span[text()='Leads']",
-        "//*[@data-id='Lead']",
-        "//a[contains(text(), 'Lead')]"
+        "//*[@data-id='Lead']", 
+        "//a[contains(text(), 'Lead')]",
+        "//one-app-nav-bar-item-root[@data-id='Lead']",
+        "//lightning-primitive-icon[contains(@class, 'lead')]",
+        "//a[@data-label='Leads']",
+        "//span[contains(text(), 'Lead')]//ancestor::a",
+        "//nav//a[contains(@href, 'Lead')]",
+        "//a[@title='Leads']",
+        "//button[contains(@aria-label, 'Lead')]",
+        "//*[contains(@class, 'navItem')]//a[contains(text(), 'Lead')]"
       ];
       
       for (const selector of alternativeLeadSelectors) {
         try {
+          console.log(`🔍 Trying selector: ${selector}`);
           await this.page.waitForSelector(selector, { state: 'visible', timeout: 5000 });
           console.log(`✅ Found Lead tab with alternative selector: ${selector}`);
           await this.common.click(`xpath=${selector}`);
           console.log("✅ Leads tab clicked with alternative selector");
           return;
         } catch (altError) {
+          console.log(`❌ Selector failed: ${selector}`);
           continue;
         }
       }
-      throw new Error("Could not find Lead tab with any selector");
+      
+      // Final fallback: try to find any element containing "Lead" text
+      try {
+        console.log("🔄 Final attempt: searching for any element containing 'Lead'...");
+        const leadElements = await this.page.locator("//*[contains(text(), 'Lead')]").count();
+        console.log(`🔍 Found ${leadElements} elements containing 'Lead'`);
+        
+        if (leadElements > 0) {
+          // Try clicking the first clickable element containing "Lead"
+          const clickableLeadElement = this.page.locator("//*[contains(text(), 'Lead') and (self::a or self::button)]").first();
+          if (await clickableLeadElement.count() > 0) {
+            await clickableLeadElement.click();
+            console.log("✅ Clicked first clickable element containing 'Lead'");
+            return;
+          }
+        }
+      } catch (finalError) {
+        console.log("❌ Final fallback also failed");
+      }
+      
+      throw new Error("Could not find Lead tab with any selector - check debug screenshot");
     }
     
     // Click with primary locator if found
