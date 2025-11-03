@@ -16,7 +16,13 @@ export class CommonFunctions {
   // =============================================================================
 
   async navigateTo(url: string): Promise<void> {
-    await this.page.goto(url, { waitUntil: 'networkidle' });
+    await this.page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    // Wait for page to stabilize but don't require networkidle (some pages have background polling)
+    try {
+      await this.page.waitForLoadState('load', { timeout: 15000 });
+    } catch (e) {
+      console.log("⚠️ Page still loading but continuing...");
+    }
   }
 
   async waitForPageLoad(): Promise<void> {

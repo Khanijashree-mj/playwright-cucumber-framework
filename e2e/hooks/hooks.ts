@@ -33,7 +33,7 @@ Before(async function ({ pickle }) {
     recordVideo: {
       dir: "test-results/videos",
     },
-    // Use no viewport to fit actual browser window size
+    // viewport: null makes the page match the browser window size (which is maximized)
     viewport: null
   });
   await context.tracing.start({
@@ -45,8 +45,8 @@ Before(async function ({ pickle }) {
   });
   page = await context.newPage();
   
-  // Browser will use actual window size due to viewport: null and --start-maximized
-  console.log(`✅ Browser window configured to fit your screen`);
+  // Browser window maximized - viewport matches window size (full screen)
+  console.log(`✅ Browser maximized - page fills entire window`);
   
   pageFixture.page = page;
 });

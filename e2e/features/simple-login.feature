@@ -9,11 +9,12 @@ Feature: Example-Driven Lead Creation Tests
     And I convert it to "opportunity"
     And I create new "sales quote"
     And I select packages "<package1>" and "<package2>"
+    And I successfully created the quote
 
     @us
     Examples:
-    | country | environment |user           | package1              | package2                                       |
-    | US      | RingCXdev   |RingCXdev      | Office-RingEX Premium | Contact Centre-Digital Edition Named Seat (USD)| 
+    | country | environment |user           | package1                 | package2                                       |
+    | US      | GCI      | GCIUser          | Office-RingEX Premium | Engage Digital Standalone-concurrent seat based (USD)| 
 
 
     #

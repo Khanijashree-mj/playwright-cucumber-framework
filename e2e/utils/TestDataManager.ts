@@ -36,13 +36,14 @@ export class TestDataManager {
 
   /**
    * Auto-fetch user credentials based on environment
-   * @param environment - 'GCI', 'Dev', 'BISUAT'
+   * @param environment - 'GCI', 'Dev', 'BISUAT', 'RingCXdev'
    */
   public getUserByEnvironment(environment: string): { username: string; password: string; description: string } {
     const envToUserMapping: { [key: string]: string } = {
       'GCI': 'gciUser',
       'Dev': 'devUser', 
-      'BISUAT': 'bisuatUser'
+      'BISUAT': 'bisuatUser',
+      'RingCXdev': 'RingCXdev'
     };
 
     const userType = envToUserMapping[environment];

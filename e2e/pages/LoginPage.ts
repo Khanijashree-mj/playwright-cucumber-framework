@@ -1,8 +1,9 @@
-import { Page } from "@playwright/test";
+import { expect, Locator, Page } from "@playwright/test";
 import { BasePage } from "./BasePage";
 import { DynamicLocatorManager } from "../objectRepository/managers/DynamicLocatorManager";
 import { TestDataManager } from "../utils/TestDataManager";
 import { CommonFunctions } from "../utils/CommonFunctions";
+import { context } from "@cucumber/cucumber";
 
 /**
  * LoginPage - Clean implementation for environment-based lead creation testing
@@ -88,6 +89,11 @@ export class LoginPage extends BasePage {
     await this.common.safeFill(this._getLocator('loginPage.usernameField'), userData.username);
     await this.common.safeFill(this._getLocator('loginPage.passwordField'), userData.password);
     await this.common.safeClick(this._getLocator('loginPage.loginButton'));
+    await this.page.waitForTimeout(20000);  //add this wait if confimration code asked and add it manually  
+    // Wait for page navigation after login
+    console.log(`⏳ Waiting for login to complete...`);
+    await this.page.waitForLoadState('domcontentloaded');
+    await this.page.waitForLoadState('networkidle', { timeout: 60000 });
     
     console.log(`✅ Login submitted for ${environment} environment`);
   }
@@ -103,7 +109,7 @@ export class LoginPage extends BasePage {
     // Wait for navigation bar to be fully loaded
     console.log("⏳ Waiting for navigation bar to load...");
     await this.page.waitForLoadState('domcontentloaded');
-    await this.page.waitForTimeout(5000);
+    await this.page.waitForTimeout(10000); // Increased wait time
     
     // Wait for Lead tab to be visible before clicking
     try {
@@ -118,7 +124,12 @@ export class LoginPage extends BasePage {
         "//a[contains(@title, 'Lead')]",
         "//span[text()='Leads']",
         "//*[@data-id='Lead']",
-        "//a[contains(text(), 'Lead')]"
+        "//a[contains(text(), 'Lead')]",
+        "//one-app-nav-bar-item-root[@data-id='Lead']",
+        "//lightning-primitive-icon[contains(@class, 'lead')]",
+        "//a[@data-label='Leads']",
+        "//span[contains(text(), 'Lead')]//ancestor::a",
+        "//nav//a[contains(@href, 'Lead')]"
       ];
       
       for (const selector of alternativeLeadSelectors) {
@@ -262,6 +273,12 @@ export class LoginPage extends BasePage {
     await this.common.fill(this._getLocator('leadPage.fill_country'), addressData.Country);
     console.log(`✅ Country field filled with: ${addressData.Country}`);
     
+    await this.common.fill(this._getLocator('leadPage.fill_city_1'), addressData.City);
+    console.log(`✅ City field filled with: ${addressData.City}`);
+    await this.common.fill(this._getLocator('leadPage.fill_Zip_1'), addressData.Zipcode);
+    console.log(`✅ Zipcode field filled with: ${addressData.Zipcode}`);
+    await this.common.fill(this._getLocator('leadPage.fill_state_1'), addressData.State);
+    console.log(`✅ Street field filled with: ${addressData.State}`);
     await this.common.click(this._getLocator('leadPage.save_btn'));
     await this.page.waitForTimeout(30000);
     
@@ -543,10 +560,15 @@ export class LoginPage extends BasePage {
 
   
   async create_new_quote(quoteform: string): Promise<void>{
+    const oppty_page = this.page;
+    
+
+   //----------commented for time being-----------//
       const conversionopptyURL = this.page.url();
       console.log("📋 URL before Apply/Convert:", conversionopptyURL);
    
-      // Wait for URL change indicating navigation to opportunity page
+      // Wait for URL change indicating navigation to opportunity page  
+      console.log(`⏳ Waiting for navigation from current URL...`);
       await this.page.waitForURL(url => url.toString() !== conversionopptyURL, { timeout: 50000 });
       console.log("🔀 Navigation detected after Convert!");
       
@@ -554,8 +576,9 @@ export class LoginPage extends BasePage {
       console.log("📋 New URL:", newopptyURL);
 
       // Wait for opportunity page to load completely
-      await this.page.waitForLoadState('domcontentloaded', { timeout: 30000 });
-      await this.page.waitForLoadState('networkidle', { timeout: 30000 });
+      await this.page.waitForLoadState('domcontentloaded');
+      //////-----Remove the networkidle line entirely (Salesforce has persistent background requests)-----///
+     // await this.page.waitForLoadState('networkidle');
       
       // Verify opportunity page has loaded
       await this.verifyPageLoaded('Opportunity', this.opportunityPattern, this.opportunityIndicators, true);
@@ -563,47 +586,272 @@ export class LoginPage extends BasePage {
     
       console.log(`🎉 Complete lead creation and conversion workflow finished successfully`);
 
-    // Click Quote tab (direct page context, no iframe)
-      console.log("🔍 Looking for Quote tab...");
-      try {
-        await this.page.waitForSelector(this._getLocator('OpportunityPage.Quote_tab'), { timeout: 30000 });
-        console.log("✅ Quote tab found, clicking...");
-        await this.common.jsClick(this._getLocator('OpportunityPage.Quote_tab'));
-        console.log("✅ Quote tab clicked successfully");
-      } catch (error) {
-        console.log("❌ Quote tab click failed:", error);
-        console.log("🔍 Page URL:", this.page.url());
-        throw error;
-      }
-      await this.page.waitForTimeout(30000);
+       //-----------commented for time being-----------*/
+//bisuat
+    //await this.page.goto("https://rc--bisuat.sandbox.lightning.force.com/lightning/r/Opportunity/006U700000JBGL4IAP/view", { waitUntil: 'domcontentloaded' });
+      //gci
+     // await this.page.goto("https://rc--gci.sandbox.lightning.force.com/lightning/r/Opportunity/006Ot00000TNeaMIAT/view", { waitUntil: 'domcontentloaded' });
+      // Wait for opportunity page to load completely after direct navigation
+      console.log("🔀 Direct navigation to opportunity completed!"); /// */
+      await this.page.waitForLoadState('domcontentloaded', { timeout: 30000 });
+        //await this.page.waitForLoadState('networkidle', { timeout: 60000 });
+      console.log("✅ Opportunity page loaded successfully");
+        await this.page.waitForTimeout(5000);
+
+       // Save the current URL
+      const oppty_Url = this.page.url();
+      console.log("📋 Opportunity page URL:", oppty_Url);
       
+        // Click on Account Name link to navigate to account page
+        console.log("🔄 Clicking Account Name link...");
+        await this.page.locator(this._getLocator('OpportunityPage.Account_Name_Link')).click();
+        await this.page.waitForLoadState('domcontentloaded');
+        await this.page.waitForTimeout(10000);
+        console.log("✅ Navigated to Account page:", this.page.url());
+
+        // Click on Contact Roles tab
+        console.log("🔄 Clicking Contact Roles tab...");
+        await this.page.locator(this._getLocator('OpportunityPage.Contact_role_relatedlist')).click();
+        await this.page.waitForTimeout(3000);
+
+        // Click on New button
+        console.log("🔄 Clicking New button...");
+        await this.page.locator(this._getLocator('OpportunityPage.New_button')).click();
+        await this.page.waitForTimeout(8000);
+
+        // Debug: Check what iframes are available
+        console.log("🔍 Checking available iframes after clicking New button...");
+        const availableIframes = await this.page.locator('iframe').all();
+        console.log(`🔍 Found ${availableIframes.length} iframes on the page`);
+        
+        for (let i = 0; i < availableIframes.length; i++) {
+          const title = await availableIframes[i].getAttribute('title');
+          const src = await availableIframes[i].getAttribute('src');
+          const name = await availableIframes[i].getAttribute('name');
+          console.log(`🔍 Iframe ${i}: title="${title}", src="${src}", name="${name}"`);
+        }
+
+        // Wait for iframe to load and switch to it - use the last iframe (newest one after clicking New)
+        console.log("🔄 Looking for Contact Role iframe...");
+        await this.page.waitForTimeout(3000); // Give time for iframe to load content
+        
+        // Try to find iframe containing the Contact form element by checking each iframe
+        let contactRoleFrame;
+        let iframeFound = false;
+        
+        // Try to find iframe containing the Contact input field, starting from the last (newest)
+        for (let i = availableIframes.length - 1; i >= 0; i--) {
+          try {
+            const frameName = await availableIframes[i].getAttribute('name');
+            if (!frameName) continue;
+            
+            const frameLocator = this.page.frameLocator(`iframe[name="${frameName}"]`);
+            // Check if this iframe contains the Contact input field
+            const contactField = frameLocator.locator('//input[@id="j_id0:list:j_id3:j_id4:j_id5"]');
+            await contactField.waitFor({ state: 'visible', timeout: 3000 });
+            contactRoleFrame = frameLocator;
+            console.log(`✅ Contact Role iframe found at index ${i} with name: ${frameName}`);
+            iframeFound = true;
+            break;
+      } catch (error) {
+            // Continue to next iframe
+          }
+        }
+        
+        // If not found by checking content, use the last iframe
+        if (!iframeFound) {
+          console.log("⚠️ Contact field not found in iframes, using last iframe as fallback");
+          contactRoleFrame = this.page.frameLocator('iframe').last();
+        }
+
+        // Ensure contactRoleFrame is defined
+        if (!contactRoleFrame) {
+          throw new Error("Could not find Contact Role iframe");
+        }
+
+        const leadData = this.testDataManager.getTestData('leadform');
+        const first_name = leadData.first_name;
+        const last_name = leadData.last_name;
+        const contact_name = first_name + " " + last_name;
+        
+        console.log("🔄 Clicking on account role in iframe...");
+        await contactRoleFrame.locator(this._getLocator('OpportunityPage.contact_role_dropdown')).selectOption({ label: 'Accounts Payable' });
+        await this.page.waitForTimeout(3000); 
+        
+        // Select contact from dropdown using iframe context
+        console.log("🔄 Clicking on account name field in iframe...");
+        await contactRoleFrame.locator(this._getLocator('OpportunityPage.account_name_dropdown')).fill(contact_name); 
+        await this.page.waitForTimeout(3000); 
+        
+
+               // Click Contact Lookup button in iframe - opens new tab/window
+      console.log("🔄 Clicking Contact Lookup button...");
+      
+      // Set up promise to wait for new tab/window BEFORE clicking
+      const page_promise = this.page.context().waitForEvent('page');
+ 
+      // Click the lookup field or element that opens the new tab
+      await this.common.frameJsClick(contactRoleFrame, this._getLocator('OpportunityPage.Contact_Lookup'));       
+ 
+      // Await the new page to be available
+      const new_page = await page_promise;
+      console.log("✅ New popup window opened! URL:", new_page.url());
+      
+      // Bring the new popup to front
+      await new_page.bringToFront();
+      
+      // Wait for the popup page to load
+      await new_page.waitForLoadState('domcontentloaded', { timeout: 30000 });
+      await new_page.waitForLoadState('load', { timeout: 30000 });
+      console.log("✅ Popup page loaded");
+      
+      // Take screenshot of popup to see what's displayed
+      await new_page.screenshot({ 
+        path: './test-results/screenshots/contact-lookup-popup.png',
+        fullPage: true 
+      });
+      console.log("📸 Screenshot taken: contact-lookup-popup.png");
+      
+      // Wait a bit for any dynamic content to load
+      await this.page.waitForTimeout(3000);
+      
+      // Take another screenshot after waiting
+      await new_page.screenshot({ 
+        path: './test-results/screenshots/contact-lookup-popup-after-wait.png',
+        fullPage: true 
+      });
+      console.log("📸 Screenshot taken after wait: contact-lookup-popup-after-wait.png");
+      
+      // Wait for contact link to be visible and clickable (results may load dynamically)
+      console.log("🔄 Waiting for contact link to be clickable...");
+      
+      // Wait longer for results to load dynamically
+      await this.page.waitForTimeout(5000);
+      console.log("⏳ Waited 5 seconds for results to load");
+      
+      // Debug: Check for iframes in the popup
+      const popupFrames = await new_page.frames();
+      console.log(`🔍 Frames in popup: ${popupFrames.length}`);
+      for (let i = 0; i < popupFrames.length; i++) {
+        const frameUrl = popupFrames[i].url();
+        console.log(`  Frame ${i}: ${frameUrl}`);
+      }
+      
+      // Debug: Print available links in the popup main page
+      const allLinks = await new_page.locator('a').all();
+      console.log(`🔍 Total links found in popup main page: ${allLinks.length}`);
+      for (let i = 0; i < Math.min(allLinks.length, 10); i++) {
+        const text = await allLinks[i].textContent();
+        const href = await allLinks[i].getAttribute('href');
+        console.log(`  Link ${i}: "${text}" href="${href}"`);
+      }
+      
+      // Debug: Check for table structure
+      const tables = await new_page.locator('table').count();
+      console.log(`🔍 Tables found in main page: ${tables}`);
+      
+      // Check all iframes for content (contacts are likely in LookupResultsFrame)
+      let resultsFrame = null;
+      for (let i = 0; i < popupFrames.length; i++) {
+        const frameUrl = popupFrames[i].url();
+        const frameLinks = await popupFrames[i].locator('a').count();
+        const frameTables = await popupFrames[i].locator('table').count();
+        console.log(`  Frame ${i} - Links: ${frameLinks}, Tables: ${frameTables}`);
+        
+        // Look for the frame with results (has tables and links)
+        if (frameLinks > 0 || frameTables > 0) {
+          console.log(`✅ Found content in Frame ${i}!`);
+          resultsFrame = popupFrames[i];
+          break;
+        }
+      }
+      
+      // Try multiple locator strategies to find the contact link
+      let contactLocator;
+      let contactFound = false;
+      
+      // Use the results frame if found, otherwise use main page
+      const searchContext = resultsFrame || new_page;
+      console.log(`🔍 Searching in: ${resultsFrame ? 'Results iframe' : 'Main page'}`);
+      
+      // Strategy 1: Original locator in iframe
+      if (resultsFrame) {
+        contactLocator = resultsFrame.locator(this._getLocator('OpportunityPage.contact_name'));
+        const count1 = await contactLocator.count();
+        console.log(`🔍 Strategy 1 (iframe) count: ${count1}`);
+        if (count1 > 0) {
+          console.log("✅ Found contact using original locator in iframe");
+          await resultsFrame.locator(this._getLocator('OpportunityPage.contact_name')).click();
+          contactFound = true;
+          console.log("✅ Contact selected");
+        }
+      }
+    
+      
+      // The lookup window closes automatically after selection
+      // Wait a bit and then switch back to the original page
+      
+      await this.page.waitForTimeout(2000);
+      
+      // Switch back to the original page context
+      await this.page.bringToFront();
+      await this.page.waitForTimeout(1000);
+        
+       await this.page.waitForTimeout(3000);
+
+       
+       // Click Save button in iframe
+       console.log("🔄 Clicking Save button in iframe...");
+       await contactRoleFrame.locator('//a[@class="btn buttonClass" and text()="Save"]').click();
+       await this.page.waitForTimeout(5000);
+       
+       // Navigate back to opportunity page
+       await this.page.goto(oppty_Url, { waitUntil: 'domcontentloaded' });
+
+      // Click on Quote tab to access quote creation
+       console.log("🔄 Clicking Quote tab...");
+        await this.page.locator(this._getLocator('OpportunityPage.Quote_tab')).waitFor({ state: 'visible', timeout: 15000 });
+        await this.page.locator(this._getLocator('OpportunityPage.Quote_tab')).click();
+        console.log("✅ Quote tab clicked successfully");
+        await this.page.waitForTimeout(10000); // Wait for tab to load
+      
+
+      // Look for Quote Wizard iframe and New Quote button
+      console.log("🔄 Looking for Quote Wizard iframe...");
+      
+      // Wait for Quote Wizard iframe to load
+      await this.page.waitForTimeout(30000); // Wait for Quote Wizard iframe to load
       await this.page.waitForSelector('iframe[title="Quote Wizard"]', { timeout: 30000 });
       const quoteFrame = await this.page.frameLocator('iframe[title="Quote Wizard"]');
+      console.log("✅ Quote Wizard iframe found");
 
-      // Wait for new tab/window to open after clicking "Add New"
+      // Wait for new tab/window to open after clicking "Add New" and click button simultaneously
       console.log("🔄 Clicking 'Add New' button - expecting new tab to open...");
-      const [newPage] = await Promise.all([
+      const [quotePage] = await Promise.all([
         this.page.context().waitForEvent('page'), // Wait for new page/tab
-        this.common.frameJsClick(quoteFrame,this._getLocator('OpportunityPage.New_sales_quote'))
+        this.common.frameJsClick(quoteFrame, this._getLocator('OpportunityPage.New_sales_quote'))
       ]);
       
       console.log("🔀 New tab opened - switching focus!");
       
       // Switch to the new page
-      await newPage.waitForLoadState('domcontentloaded', { timeout: 30000 });
-      this.page = newPage; // Switch page context
+      await quotePage.waitForLoadState('domcontentloaded', { timeout: 30000 });
+      this.page = quotePage; // Switch page context
       
       const newquoteURL = this.page.url();
       console.log("📋 New Quote URL:", newquoteURL);
-      
-       // Verify quote page has loaded
-       await this.verifyPageLoaded('Quote', this.quotePattern, this.quoteIndicators, true);
-       console.log("navigated to UQT tab");
-      
+
+
   }
+
 
   // Method to select package by name from examples table
   async selectPackage(packageName1: string, packageName2: string): Promise<void> {
+      // Use the current page (new page was already handled in create_new_quote)
+      const newPage = this.page;
+     
+      
+      
       // Split package names: If has '-' use part after '-', otherwise use full name
       const actualPackage1 = packageName1.includes('-') ? packageName1.split('-')[1].trim() : packageName1.trim();
       const actualPackage2 = packageName2.includes('-') ? packageName2.split('-')[1].trim() : packageName2.trim();
@@ -614,28 +862,256 @@ export class LoginPage extends BasePage {
       console.log(`📦 Package 1: "${packageName1}" → Select: "${actualPackage1}"`);
       await this.page.waitForTimeout(8000); 
       
-      // Click specific package select button
+      // Click specific office package select button
       console.log(`🔍 Looking for: ${this._getLocator('OpportunityPage.Package_select_button').replace('{PACKAGE_NAME}', actualPackage1)}`);
-      await this.common.jsClick(this._getLocator('OpportunityPage.Package_select_button').replace('{PACKAGE_NAME}', actualPackage1));
+      await this.page.locator(this._getLocator('OpportunityPage.Package_select_button').replace('{PACKAGE_NAME}', actualPackage1)).click();
       console.log(`✅ Successfully selected: ${actualPackage1}`);
 
       //---------Multi-product quote creation -----------//
-      try{
+      
         console.log(`📦 Package 2: "${packageName2}" → Header: "${headerName2}" → Select: "${actualPackage2}"`);
-        //-------click on header-------------
-        await this.common.jsClick(this._getLocator('OpportunityPage.Package_group_button').replace('{PACKAGE_NAME}', headerName2));
+        //-------select from dropdown-------------
+        // Use selectOption which handles opening dropdown and selecting automatically
+        await newPage.locator(this._getLocator('OpportunityPage.Service_dropdown')).selectOption({ label: headerName2 });
+        console.log(`✅ Successfully selected header: ${headerName2}`);
+        
         // Click specific package select button
-        await this.common.jsClick(this._getLocator('OpportunityPage.Package_select_button').replace('{PACKAGE_NAME}', actualPackage2));
+        console.log(`🔍 Looking for package button with text: "${actualPackage2}"`);
+        await newPage.locator(this._getLocator('OpportunityPage.Package_select_button').replace('{PACKAGE_NAME}', actualPackage2)).click();
+        console.log(`✅ Successfully clicked package button for: ${actualPackage2}`);
+
+        // Debug: Check what package elements are available
+        const packageElements = await newPage.locator('//span[contains(text(),"seat")]').allTextContents();
+        console.log(`🔍 Available package elements with "seat": ${JSON.stringify(packageElements)}`);
+        
+        console.log(`🔍 Looking for quantity input field`);
+        // Use updated input_seats locator from patterns.json
+        const inputField = newPage.locator(this._getLocator('OpportunityPage.input_seats')).first();
+        await inputField.clear();
+        console.log(`🧹 Cleared input field for: ${actualPackage2}`);
+        await inputField.fill("5");
+        console.log(`✅ Successfully filled seats for: ${actualPackage2}`);
+
         console.log(`✅ Successfully selected: ${actualPackage2} from ${headerName2} group`);
-      }
-      catch{
-        console.log(`single product quote-no other packages found to select`);
+// console.log(`single product quote-no other packages found to sele
+
+      
+      
+      
+      console.log(`🔄 Clicking Add Products tab...`);
+      await newPage.locator(this._getLocator('OpportunityPage.Add_Products_tab')).click();
+      console.log(`✅ Add Products tab clicked`);
+      
+      console.log(`🔄 Clicking Add-ons for: ${headerName2}`);
+      await newPage.locator(this._getLocator('OpportunityPage.Add-ons').replace('{PACKAGE_NAME}', headerName2)).click();
+      console.log(`✅ Add-ons clicked`);
+
+      console.log(`🔄 Clicking Add-on product...`);
+        await newPage.locator(this._getLocator('OpportunityPage.Add-on_product')).click();
+        console.log(`✅ Add-on product clicked`);
+      
+
+      
+      
+      console.log(`🔄 Clicking Price tab...`);
+      await newPage.locator(this._getLocator('OpportunityPage.Price_tab')).click();
+      console.log(`✅ Price tab clicked`);
+      
+      console.log(`🔄 Clicking Save Changes...`);
+      await newPage.locator(this._getLocator('OpportunityPage.save_changes')).click();
+      console.log(`✅ Original save_changes locator worked`);
+
+      console.log(`⏳ Waiting 80 seconds for processing...`);
+      await this.page.waitForTimeout(80000);
+      console.log(`✅ Wait completed for 80 seconds`);
+           await newPage.locator(this._getLocator('OpportunityPage.Quote_Details')).click();
+           
+      while(!(await newPage.locator(this._getLocator('OpportunityPage.area_code')).isVisible())) {
+      await this.page.waitForTimeout(10000);
+      await newPage.locator(this._getLocator('OpportunityPage.Quote_Details')).click();
+      console.log(`inside while`);
       }
 
-      await this.common.jsClick(this._getLocator('OpportunityPage.save_changes')); 
-      console.log(`✅ Package selection completed and saved`);
-      await this.page.waitForTimeout(8000); 
+         
+      try{
+        //await newPage.locator(this._getLocator('OpportunityPage.Quote_Details')).click();
+      await newPage.locator(this._getLocator('OpportunityPage.Payment_method_dropdown')).selectOption({ label: 'Invoice' });
+      console.log(`✅ Successfully selected payment method: Invoice`);
+      }catch(error){
+        console.log(`❌ Payment method disabled and defaulted to invoice.`);
+      }
+      console.log(`quote details tab entered`);
+      
+      // Wait for area code field to be visible
+      console.log("⏳ Waiting for area code field...");
+      await newPage.locator(this._getLocator('OpportunityPage.area_code')).waitFor({ state: 'visible', timeout: 30000 });
+      console.log("✅ Area code field found");
+      
+      // Fill United States and press Enter
+      await newPage.locator(this._getLocator('OpportunityPage.area_code')).fill('United States');
+      await newPage.waitForTimeout(3000);
+      await newPage.locator(this._getLocator('OpportunityPage.area_code')).press('Enter');
+      await newPage.waitForTimeout(2000);
+      
+      // Fill California and press Enter
+      await newPage.locator(this._getLocator('OpportunityPage.area_code')).fill('California');
+      await newPage.waitForTimeout(3000);
+      await newPage.locator(this._getLocator('OpportunityPage.area_code')).press('Enter');
+      await newPage.waitForTimeout(2000);
+      
+      // Fill Alpine (619) and press Enter
+      await newPage.locator(this._getLocator('OpportunityPage.area_code')).fill('Alpine');
+      await newPage.waitForTimeout(3000);
+      await newPage.locator(this._getLocator('OpportunityPage.area_code')).press('Enter');
+      await newPage.waitForTimeout(2000);
+      await newPage.locator(this._getLocator('OpportunityPage.save_changes')).click();
+      await newPage.locator(this._getLocator('OpportunityPage.Price_tab')).click();
+      await this.page.waitForTimeout(3000);
+      
+
   }
+
+  async successfully_created_the_quote(): Promise<void>{
+      // Wait for new page/tab to open after clicking Request Invoice Approval link 
+      const uqt_url = this.page.url();
+
+      // Wait for new page and click link
+      const [approvalPage] = await Promise.all([
+        this.page.context().waitForEvent('page'), // Wait for new page/tab
+        this.page.locator(this._getLocator('OpportunityPage.Request_invoice_approval_link')).click()
+      ]);
+      
+      console.log("🔀 New tab opened - switching focus!");
+      
+      // Bring new tab to front
+      await approvalPage.bringToFront();
+      
+      // Wait for the new page to load
+      await approvalPage.waitForLoadState('domcontentloaded', { timeout: 30000 });
+      await approvalPage.waitForLoadState('load', { timeout: 30000 });
+      
+      // Get URL from the NEW page
+      const newApprovalURL = approvalPage.url();
+      console.log("📋 Approval Page URL:", newApprovalURL);
+
+
+      console.log("🔄 Working on approval page...");
+
+      // Interact with elements in the NEW approval tab
+      console.log("✅ Clicked on Quote creation and approval request");
+      await approvalPage.locator(this._getLocator('OpportunityPage.invoice_approval_radio_button')).click();
+      console.log("✅ Approval radio button clicked");
+      
+      await approvalPage.locator(this._getLocator('OpportunityPage.Next_button')).click();
+      console.log("✅ Next button clicked");
+      
+      // The record type selection modal is already visible (Invoicing Request is selected)
+      // Click Next button in the modal to proceed to the form
+      console.log("🔄 Clicking Next button in record type modal...");
+      await approvalPage.locator('button:has-text("Next")').click();
+      console.log("✅ Clicked Next in record type modal");
+      
+      // Wait for the approval form to load
+      await approvalPage.waitForTimeout(3000);
+      console.log("✅ Approval form loaded");
+      
+    // Select Industry dropdown (Lightning component)
+    // First find and click the dropdown button to open it
+    console.log("🔄 Looking for Industry dropdown button...");
+    await approvalPage.locator('lightning-combobox[data-name="Industry__c"] button, [data-name="Industry__c"] button, button[aria-label*="Industry"]').first().click();
+    await approvalPage.waitForTimeout(1000);
+    await approvalPage.locator('//span[@title="Automotive"]').click();
+    console.log("✅ Industry selected: Automotive");
+   
+   // console.log("✅ Quote creation process completed successfully");
+
+    // Select Payment Terms dropdown (Lightning component)
+    await approvalPage.locator(this._getLocator('OpportunityPage.invoice_payment_terms_dropdown')).click();
+    await approvalPage.waitForTimeout(1000);
+    await approvalPage.locator('//span[@title="30"]').click();
+    console.log("✅ Payment terms selected: Net 30");
+
+    await approvalPage.locator(this._getLocator('OpportunityPage.invoice_potential_users')).fill('10');
+    await approvalPage.locator(this._getLocator('OpportunityPage.invoice_reason_textarea')).fill('Automation test ignore');
+    await approvalPage.locator(this._getLocator('OpportunityPage.invoice_initial_divices')).fill('10');
+    await approvalPage.locator(this._getLocator('OpportunityPage.invoice_legal_company_head_office')).fill('Automation_script_khani');
+    
+    console.log("🔄 Clicking Save button...");
+    await approvalPage.locator(this._getLocator('OpportunityPage.invoice_save_button')).click();
+    console.log("✅ Save button clicked again");
+    await approvalPage.waitForTimeout(15000);
+    await approvalPage.waitForLoadState('load');
+
+    await approvalPage.locator(this._getLocator('OpportunityPage.Fields_edit_button')).click();
+    await approvalPage.waitForTimeout(5000);
+    await approvalPage.locator(this._getLocator('OpportunityPage.invoive_status_dropdown')).click();
+    await approvalPage.waitForTimeout(5000);
+    await approvalPage.locator(this._getLocator('OpportunityPage.invoive_status_option')).click();
+    await approvalPage.waitForTimeout(5000);
+    await approvalPage.locator(this._getLocator('OpportunityPage.invoice_save_button')).click();
+    await approvalPage.waitForTimeout(5000);
+    console.log("✅ invoice approved");
+    await approvalPage.waitForTimeout(8000);
+
+    // Close the invoice approval tab
+    await approvalPage.close();
+    console.log("✅ Approval tab closed");
+    
+    // Switch back to original page
+    await this.page.bringToFront();
+    console.log("🔄 Switched back to uqt tool");
+    await this.page.locator(this._getLocator('OpportunityPage.Quote_Details')).click();
+    await this.page.waitForTimeout(5000);
+ ///------------------creating new page context for sales agreement page----------------------/////
+    const [salesagreemnet_Page] = await Promise.all([
+      this.page.context().waitForEvent('page'), // Wait for new page/tab
+      this.page.locator(this._getLocator('OpportunityPage.quote_number')).click()
+    ]);
+    
+    console.log("🔀 sales agreement tab opened - switching focus!");
+    
+    // Bring new tab to front
+    await salesagreemnet_Page.bringToFront();
+    
+    // Wait for the new page to load
+    await salesagreemnet_Page.waitForLoadState('domcontentloaded', { timeout: 30000 });
+    await salesagreemnet_Page.waitForLoadState('load', { timeout: 30000 });
+
+    console.log("🔄 Working on Sales agreement page...");
+    await salesagreemnet_Page.waitForTimeout(5000);
+    await salesagreemnet_Page.locator(this._getLocator('OpportunityPage.SA_Details_tab')).click();
+    await salesagreemnet_Page.waitForTimeout(5000);
+    await salesagreemnet_Page.locator(this._getLocator('OpportunityPage.Fields_edit_button')).click();
+    await salesagreemnet_Page.waitForTimeout(5000);
+    await salesagreemnet_Page.locator(this._getLocator('OpportunityPage.SA_quote_Status_dropdown')).click();
+    await salesagreemnet_Page.waitForTimeout(5000);
+    await salesagreemnet_Page.locator(this._getLocator('OpportunityPage.SA_quote_status_option')).click();
+    await salesagreemnet_Page.waitForTimeout(5000);
+    await salesagreemnet_Page.locator(this._getLocator('OpportunityPage.SA_quote_type_dropdown')).click();
+    await salesagreemnet_Page.waitForTimeout(5000);
+    await salesagreemnet_Page.locator(this._getLocator('OpportunityPage.SA_quote_type_option')).click();
+    await salesagreemnet_Page.waitForTimeout(5000);
+    await salesagreemnet_Page.locator(this._getLocator('OpportunityPage.invoice_save_button')).click();
+    await salesagreemnet_Page.waitForTimeout(5000);
+
+    // Close the Sales agreement tab
+    await salesagreemnet_Page.close();
+    console.log("✅ Sales agreement tab closed");
+
+    await this.page.bringToFront();
+    console.log("🔄 Switched back to uqt tool");
+    await this.page.close();
+    await this.page.waitForTimeout(5000); console.log("🔄 Switched back to opportunity page");
+
+
+
+    
+
+  } 
+    
+
+
+
   // Generic method to verify any new page has loaded successfully
   private async verifyPageLoaded(pageType: string, urlPattern?: RegExp, pageIndicators?: string[], extractId: boolean = false): Promise<string | void> {
     try {

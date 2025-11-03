@@ -23,7 +23,7 @@ Given("I navigate to the {string} login page", async (environment: string) => {
 // LOGIN STEPS
 // =============================================================================
 
-When("I login as {string}", async (userType: string) => {
+When("I login as {string}",{ timeout: 100000 }, async (userType: string) => {
   // Auto-map environment to user, ignore the userType parameter
   await loginPage.performEnvironmentLogin(currentEnvironment);
 });
@@ -59,10 +59,14 @@ When("I convert it to {string}", { timeout: 180000 }, async (opportunity: string
   await loginPage.convertlead_to_opportunity(opportunity, currentCountry); // Use stored country
 });
 
-When("I create new {string}", { timeout: 180000 }, async (quote: string) =>{
+When("I create new {string}", { timeout: 240000 }, async (quote: string) =>{
   await loginPage.create_new_quote(quote); // Use stored country
 });
 
-When("I select packages {string} and {string}", { timeout: 60000 }, async (packageName1: string, packageName2: string) =>{
+When("I select packages {string} and {string}", { timeout: 240000 }, async (packageName1: string, packageName2: string) =>{
   await loginPage.selectPackage(packageName1,packageName2);
+});
+
+When("I successfully created the quote", { timeout: 180000 }, async () =>{
+  await loginPage.successfully_created_the_quote();
 });
