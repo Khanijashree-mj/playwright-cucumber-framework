@@ -2,31 +2,31 @@
   "users": {
     "gciUser": {
       "username": "khanijashree.mj@ringcentral.com.gci",
-      "password": "Khani@2412",
+      "password": "Khani",
       "description": "GCI organization user",
       "environment": "GCI"
     },
     "devUser": {
       "username": "khanijashree.mj@ringcentral.com.proservira",
-      "password": "Khani@2412",
+      "password": "Khani",
       "description": "Dev (Proservira) organization user",
       "environment": "Dev"
     },
     "bisuatUser": {
       "username": "kkhanijashree.mj@ringcentral.com.bisuat",
-      "password": "Khani@2412", 
+      "password": "Khani", 
       "description": "BISUAT organization user",
       "environment": "BISUAT"
     },
     "RingCXdev": {
       "username": "khanijashree.mj@ringcentral.com.ringcxdev1",
-      "password": "Khani@2412", 
+      "password": "Khani@", 
       "description": "RingCXdev organization user",
       "environment": "RingCXdev"
     },
     "validUser": {
       "username": "khanijashree.mj@ringcentral.com.gci",
-      "password": "Khani@2412",
+      "password": "Khani",
       "description": "Default valid test user for successful login"
     }
    
