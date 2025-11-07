@@ -12,6 +12,8 @@ import { context } from "@cucumber/cucumber";
 export class LoginPage extends BasePage {
   private locatorManager: DynamicLocatorManager;
   private testDataManager: TestDataManager;
+  private generatedLastName: string = ''; // Store generated last name for reuse
+  private currentUsername: string = ''; // Store current logged-in username
 
   // Page verification patterns
   private readonly opportunityPattern = /\/lightning\/r\/Opportunity\/[A-Za-z0-9]{15,18}\/view/;
@@ -28,6 +30,21 @@ export class LoginPage extends BasePage {
     "//div[contains(@class,'quote')]",
     "//*[contains(text(),'QuoteWizard')]"
   ];
+
+  // Random last name generator
+  private generateRandomLastName(): string {
+    const lastNames = [
+      'Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 
+      'Davis', 'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez', 
+      'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin',
+      'Lee', 'Perez', 'Thompson', 'White', 'Harris', 'Sanchez', 'Clark',
+      'Ramirez', 'Lewis', 'Robinson', 'Walker', 'Young', 'Allen', 'King',
+      'Wright', 'Scott', 'Torres', 'Nguyen', 'Hill', 'Flores', 'Green'
+    ];
+    const randomName = lastNames[Math.floor(Math.random() * lastNames.length)];
+    const timestamp = Date.now().toString().slice(-6); // Last 6 digits of timestamp
+    return `${randomName}_${timestamp}`;
+  }
 
   constructor(page: Page) {
     super(page);
@@ -85,6 +102,9 @@ export class LoginPage extends BasePage {
   async performEnvironmentLogin(environment: string): Promise<void> {
     const userData = this.testDataManager.getUserByEnvironment(environment);
     console.log(`🌍 Performing ${environment} environment login: ${userData.description}`);
+    
+    // Store username for later use (e.g., change owner)
+    this.currentUsername = userData.username;
     
     await this.common.safeFill(this._getLocator('loginPage.usernameField'), userData.username);
     await this.common.safeFill(this._getLocator('loginPage.passwordField'), userData.password);
@@ -145,7 +165,12 @@ export class LoginPage extends BasePage {
       }
       throw new Error("Could not find Lead tab with any selector");
     }
-    
+
+    //Switch to RC sales app first
+    await this.common.click(this._getLocator('leadPage.app_launcher'));
+    await this.common.click(this._getLocator('leadPage.RC_Sales_App'));
+    await this.page.waitForTimeout(5000);
+
     // Click with primary locator if found
     await this.common.click(this._getLocator('leadPage.leadtab'));
     console.log("✅ Leads tab clicked");
@@ -177,12 +202,16 @@ export class LoginPage extends BasePage {
     console.log("📝 Filling lead form fields...");
     await this.common.waitForFrameElementVisible(frame, this._getLocator('leadPage.lead_last_name'));
   
+    // Generate random last name for this test run
+    this.generatedLastName = this.generateRandomLastName();
+    console.log(`🎲 Generated random last name: ${this.generatedLastName}`);
+  
     // Fill basic form fields
     await this.common.switchFrame_Fill_fields(frame, this._getLocator('leadPage.lead_first_name'), leaddata.first_name);
     console.log("✅ First name filled");
     await this.page.waitForTimeout(2000);
-    await this.common.switchFrame_Fill_fields(frame, this._getLocator('leadPage.lead_last_name'), leaddata.last_name);
-    console.log("✅ Last name filled");
+    await this.common.switchFrame_Fill_fields(frame, this._getLocator('leadPage.lead_last_name'), this.generatedLastName);
+    console.log(`✅ Last name filled: ${this.generatedLastName}`);
     await this.common.switchFrame_Fill_fields(frame, this._getLocator('leadPage.lead_company_name'), leaddata.company_name);
     console.log("✅ Company filled");
     await this.common.switchFrame_Fill_fields(frame, this._getLocator('leadPage.lead_email'), leaddata.email);
@@ -223,25 +252,18 @@ export class LoginPage extends BasePage {
     await this.common.fill(this._getLocator('leadPage.lead_search_user_field'), leaddata.lead_owner_name);
     console.log("✅ User search field filled");
     
-    // Wait for dropdown results to populate
-    await this.page.waitForTimeout(3000);
-    console.log("⏳ Waiting for user dropdown results...");
-    
-    // Ensure the search field is focused
-    await this.page.locator("//input[@placeholder='Search Users...']").focus();
-    console.log("✅ Search field focused");
-    
-    // Use keyboard navigation since search field is focused and working
+    // Wait for dropdown to appear and click first visible option
     console.log(`⏳ Looking for user: ${leaddata.lead_owner_name}`);
+    await this.page.waitForTimeout(2000);
     
-    // Wait for dropdown to fully populate
-    await this.page.waitForTimeout(3000);
+    // Wait for dropdown options to load
+    console.log("⏳ Waiting for dropdown options to load...");
+    await this.page.waitForSelector(this._getLocator('leadPage.lead_owner_dropdown_option'), { timeout: 15000, state: 'visible' });
+    await this.page.waitForTimeout(1000);
     
-    // Use keyboard to select first option (most reliable)
-    await this.page.keyboard.press('ArrowDown');
-    await this.page.waitForTimeout(500);
-    await this.page.keyboard.press('Enter');
-    console.log("✅ User selected via keyboard navigation");
+    // Click first available user from the dropdown
+    await this.page.locator(this._getLocator('leadPage.lead_owner_dropdown_option')).first().click();
+    console.log("✅ First user option clicked from dropdown");
 
     await this.common.click(this._getLocator('leadPage.change_owner'));
     console.log("✅ Change owner completed");
@@ -287,7 +309,10 @@ export class LoginPage extends BasePage {
   
   async convertlead_to_opportunity(leadform_data: string, country: string): Promise<void>{
     const addressData = this.testDataManager.getAddressData(country);
-    await this.page.locator("//li//span[text()='Show more actions']").first().click({ timeout: 5000 });
+    
+    // Wait for page to stabilize and click "Show more actions"
+    await this.page.waitForTimeout(3000);
+    await this.page.locator("//li//span[text()='Show more actions']").first().click({ timeout: 10000, force: true });
     console.log("✅ Show more actions clicked to convert lead");
     
     // Store current URL to detect navigation
@@ -671,8 +696,9 @@ export class LoginPage extends BasePage {
 
         const leadData = this.testDataManager.getTestData('leadform');
         const first_name = leadData.first_name;
-        const last_name = leadData.last_name;
+        const last_name = this.generatedLastName; // Use the generated last name
         const contact_name = first_name + " " + last_name;
+        console.log(`🔍 Using contact name: ${contact_name}`);
         
         console.log("🔄 Clicking on account role in iframe...");
         await contactRoleFrame.locator(this._getLocator('OpportunityPage.contact_role_dropdown')).selectOption({ label: 'Accounts Payable' });
@@ -846,7 +872,7 @@ export class LoginPage extends BasePage {
 
 
   // Method to select package by name from examples table
-  async selectPackage(packageName1: string, packageName2: string): Promise<void> {
+  async selectPackage(packageName1: string, packageName2: string, country: string): Promise<void> {
       // Use the current page (new page was already handled in create_new_quote)
       const newPage = this.page;
      
@@ -864,7 +890,7 @@ export class LoginPage extends BasePage {
       
       // Click specific office package select button
       console.log(`🔍 Looking for: ${this._getLocator('OpportunityPage.Package_select_button').replace('{PACKAGE_NAME}', actualPackage1)}`);
-      await this.page.locator(this._getLocator('OpportunityPage.Package_select_button').replace('{PACKAGE_NAME}', actualPackage1)).click();
+      await this.page.locator(this._getLocator('OpportunityPage.Package_select_button').replace('{PACKAGE_NAME}', actualPackage1)).first().click();
       console.log(`✅ Successfully selected: ${actualPackage1}`);
 
       //---------Multi-product quote creation -----------//
@@ -921,17 +947,77 @@ export class LoginPage extends BasePage {
       await newPage.locator(this._getLocator('OpportunityPage.save_changes')).click();
       console.log(`✅ Original save_changes locator worked`);
 
-      console.log(`⏳ Waiting 80 seconds for processing...`);
-      await this.page.waitForTimeout(80000);
-      console.log(`✅ Wait completed for 80 seconds`);
-           await newPage.locator(this._getLocator('OpportunityPage.Quote_Details')).click();
-           
-      while(!(await newPage.locator(this._getLocator('OpportunityPage.area_code')).isVisible())) {
-      await this.page.waitForTimeout(10000);
-      await newPage.locator(this._getLocator('OpportunityPage.Quote_Details')).click();
-      console.log(`inside while`);
+      console.log(`⏳ Waiting for progress bar to complete...`);
+      
+      // Wait for progress bar to reach 100%
+      let progress = 0;
+      const startTime = Date.now();
+      const maxWaitTime = 120000; // 2 minutes
+      
+      try {
+        // Wait for progress bar to appear first
+        await newPage.locator('.slds-progress-bar[role="progressbar"]').waitFor({ state: 'visible', timeout: 10000 });
+        console.log(`📊 Progress bar detected, monitoring completion...`);
+        
+        // Poll the progress bar until it reaches 100%
+        while (progress < 100 && (Date.now() - startTime < maxWaitTime)) {
+          try {
+            // Read from aria-valuenow attribute
+            const progressBarElement = newPage.locator('.slds-progress-bar[role="progressbar"]');
+            const progressValue = await progressBarElement.getAttribute('aria-valuenow');
+            progress = parseInt(progressValue || '0');
+            
+            // Also read from progress text for verification
+            const progressTextElement = newPage.locator('.progress-text span[aria-hidden="true"]');
+            let progressText = '';
+            try {
+              progressText = await progressTextElement.textContent() || '';
+            } catch (e) {
+              progressText = 'Not visible';
+            }
+            
+            // Log both values
+            console.log(`📊 Progress Bar: ${progress}% | Text Display: ${progressText}`);
+            
+            if (progress >= 100) {
+              console.log(`✅ Progress bar reached 100%!`);
+              break;
+            }
+            
+            // Wait 3 seconds before checking again
+            await newPage.waitForTimeout(3000);
+          } catch (err) {
+            // Progress bar might have disappeared (completion)
+            console.log(`⚠️ Progress bar disappeared - checking if completed...`);
+            
+            // Check if progress container is gone
+            const containerExists = await newPage.locator('.progress-container').isVisible();
+            if (!containerExists) {
+              console.log(`✅ Progress container removed - process completed`);
+              progress = 100;
+              break;
+            }
+            
+            // If container still exists but progress bar is gone, something is wrong
+            await newPage.waitForTimeout(3000);
+          }
+        }
+        
+        
+      } catch (e) {
+        console.log(`⚠️ No progress bar found or already completed, continuing...`);
       }
-
+      
+      // === ONCE 100% COMPLETED, CLICK QUOTE DETAILS TAB ===
+      console.log(`🎯 Progress complete, now clicking Quote Details tab...`);
+      
+      // Additional safety wait after completion
+      await newPage.waitForTimeout(3000);
+      console.log(`✅ Post-processing wait completed`);
+      
+      // Click Quote Details tab after 100% completion
+      await newPage.locator(this._getLocator('OpportunityPage.Quote_Details')).click({ force: true });
+      console.log(`✅ Quote Details tab clicked successfully`);
          
       try{
         //await newPage.locator(this._getLocator('OpportunityPage.Quote_Details')).click();
@@ -947,24 +1033,54 @@ export class LoginPage extends BasePage {
       await newPage.locator(this._getLocator('OpportunityPage.area_code')).waitFor({ state: 'visible', timeout: 30000 });
       console.log("✅ Area code field found");
       
-      // Fill United States and press Enter
-      await newPage.locator(this._getLocator('OpportunityPage.area_code')).fill('United States');
-      await newPage.waitForTimeout(3000);
-      await newPage.locator(this._getLocator('OpportunityPage.area_code')).press('Enter');
-      await newPage.waitForTimeout(2000);
+      // Get address data for the country
+      const addressData = this.testDataManager.getAddressData(country);
+      console.log(`📍 Using area code data for ${country}:`, JSON.stringify(addressData, null, 2));
+
+      try {
+        // Fill Country and press Enter
+        console.log(`🔍 Step 1: Filling country: ${addressData.Country}`);
+        await newPage.locator(this._getLocator('OpportunityPage.area_code')).fill(addressData.Country);
+        await newPage.waitForTimeout(5000);
+        await newPage.locator(this._getLocator('OpportunityPage.area_code')).press('Enter');
+        await newPage.waitForTimeout(2000);
+        console.log(`✅ Country filled and submitted: ${addressData.Country}`);
+        
+        // Fill State/Area code state and press Enter
+        console.log(`🔍 Step 2: Filling state/area: ${addressData.Area_code_state}`);
+        await newPage.locator(this._getLocator('OpportunityPage.area_code')).fill(addressData.Area_code_state);
+        await newPage.waitForTimeout(5000);
+        await newPage.locator(this._getLocator('OpportunityPage.area_code')).press('Enter');
+        await newPage.waitForTimeout(2000);
+        console.log(`✅ State/Area filled and submitted: ${addressData.Area_code_state}`);
+        
+        // Fill Province/City area code and press Enter
+        console.log(`🔍 Step 3: Filling province/city: ${addressData.Area_code_provience}`);
+        await newPage.locator(this._getLocator('OpportunityPage.area_code')).fill(addressData.Area_code_provience);
+        await newPage.waitForTimeout(5000);
+        await newPage.locator(this._getLocator('OpportunityPage.area_code')).press('Enter');
+        await newPage.waitForTimeout(3000);
+        console.log(`✅ Province/City filled and submitted: ${addressData.Area_code_provience}`);
+        
+        // Verify Save Changes button is enabled
+        const saveButton = newPage.locator(this._getLocator('OpportunityPage.save_changes'));
+        const isEnabled = await saveButton.isEnabled();
+        console.log(`🔘 Save Changes button enabled: ${isEnabled}`);
+        
+        if (!isEnabled) {
+          console.log(`⚠️ Save Changes button is still disabled! Taking screenshot...`);
+          await newPage.screenshot({ path: 'save-button-disabled.png', fullPage: true });
+        }
+        
+      } catch (error) {
+        console.log(`❌ Error filling area code fields:`, error);
+        await newPage.screenshot({ path: 'area-code-error.png', fullPage: true });
+        throw error;
+      }
       
-      // Fill California and press Enter
-      await newPage.locator(this._getLocator('OpportunityPage.area_code')).fill('California');
-      await newPage.waitForTimeout(3000);
-      await newPage.locator(this._getLocator('OpportunityPage.area_code')).press('Enter');
-      await newPage.waitForTimeout(2000);
-      
-      // Fill Alpine (619) and press Enter
-      await newPage.locator(this._getLocator('OpportunityPage.area_code')).fill('Alpine');
-      await newPage.waitForTimeout(3000);
-      await newPage.locator(this._getLocator('OpportunityPage.area_code')).press('Enter');
-      await newPage.waitForTimeout(2000);
+      console.log(`🔄 Clicking Save Changes button...`);
       await newPage.locator(this._getLocator('OpportunityPage.save_changes')).click();
+      await this.page.waitForTimeout(2000);
       await newPage.locator(this._getLocator('OpportunityPage.Price_tab')).click();
       await this.page.waitForTimeout(3000);
       
@@ -1043,13 +1159,13 @@ export class LoginPage extends BasePage {
     await approvalPage.waitForLoadState('load');
 
     await approvalPage.locator(this._getLocator('OpportunityPage.Fields_edit_button')).click();
-    await approvalPage.waitForTimeout(5000);
+    await approvalPage.waitForTimeout(1000);
     await approvalPage.locator(this._getLocator('OpportunityPage.invoive_status_dropdown')).click();
-    await approvalPage.waitForTimeout(5000);
+    await approvalPage.waitForTimeout(1000);
     await approvalPage.locator(this._getLocator('OpportunityPage.invoive_status_option')).click();
-    await approvalPage.waitForTimeout(5000);
+    await approvalPage.waitForTimeout(1000);
     await approvalPage.locator(this._getLocator('OpportunityPage.invoice_save_button')).click();
-    await approvalPage.waitForTimeout(5000);
+    await approvalPage.waitForTimeout(1000);
     console.log("✅ invoice approved");
     await approvalPage.waitForTimeout(8000);
 
@@ -1080,17 +1196,34 @@ export class LoginPage extends BasePage {
     console.log("🔄 Working on Sales agreement page...");
     await salesagreemnet_Page.waitForTimeout(5000);
     await salesagreemnet_Page.locator(this._getLocator('OpportunityPage.SA_Details_tab')).click();
-    await salesagreemnet_Page.waitForTimeout(5000);
+    await salesagreemnet_Page.waitForTimeout(1000);
     await salesagreemnet_Page.locator(this._getLocator('OpportunityPage.Fields_edit_button')).click();
-    await salesagreemnet_Page.waitForTimeout(5000);
+    await salesagreemnet_Page.waitForTimeout(1000);
     await salesagreemnet_Page.locator(this._getLocator('OpportunityPage.SA_quote_Status_dropdown')).click();
-    await salesagreemnet_Page.waitForTimeout(5000);
+    await salesagreemnet_Page.waitForTimeout(1000);
     await salesagreemnet_Page.locator(this._getLocator('OpportunityPage.SA_quote_status_option')).click();
-    await salesagreemnet_Page.waitForTimeout(5000);
+    await salesagreemnet_Page.waitForTimeout(1000);
     await salesagreemnet_Page.locator(this._getLocator('OpportunityPage.SA_quote_type_dropdown')).click();
-    await salesagreemnet_Page.waitForTimeout(5000);
+    await salesagreemnet_Page.waitForTimeout(1000);
     await salesagreemnet_Page.locator(this._getLocator('OpportunityPage.SA_quote_type_option')).click();
-    await salesagreemnet_Page.waitForTimeout(5000);
+    await salesagreemnet_Page.waitForTimeout(1000);
+
+         // SALES AGREEMENT PAGE verify start and end date present
+    const SA_StartDate = await salesagreemnet_Page.locator(this._getLocator('OpportunityPage.SA_start_date')).inputValue().catch(() => '');
+    if (!SA_StartDate) {
+      await salesagreemnet_Page.locator(this._getLocator('OpportunityPage.SA_start_date')).fill('11/27/2025');
+      console.log("✅ SA Start Date added");
+    } else {
+      console.log(`✅ SA Start Date exists: ${SA_StartDate}`);
+    }
+
+    const SA_EndDate = await salesagreemnet_Page.locator(this._getLocator('OpportunityPage.SA_end_date')).inputValue().catch(() => '');
+    if (!SA_EndDate) {
+      await salesagreemnet_Page.locator(this._getLocator('OpportunityPage.SA_end_date')).fill('12/27/2025');
+      console.log("✅ SA End Date added");
+    } else {
+      console.log(`✅ SA End Date exists: ${SA_EndDate}`);
+    }
     await salesagreemnet_Page.locator(this._getLocator('OpportunityPage.invoice_save_button')).click();
     await salesagreemnet_Page.waitForTimeout(5000);
 
@@ -1099,9 +1232,9 @@ export class LoginPage extends BasePage {
     console.log("✅ Sales agreement tab closed");
 
     await this.page.bringToFront();
-    console.log("🔄 Switched back to uqt tool");
-    await this.page.close();
-    await this.page.waitForTimeout(5000); console.log("🔄 Switched back to opportunity page");
+    console.log("🔄 Switched back to main page");
+    await this.page.waitForTimeout(3000);
+    console.log("✅ Quote creation workflow completed successfully!");
 
 
 

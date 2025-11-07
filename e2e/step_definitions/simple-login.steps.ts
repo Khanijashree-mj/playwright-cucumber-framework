@@ -63,8 +63,8 @@ When("I create new {string}", { timeout: 240000 }, async (quote: string) =>{
   await loginPage.create_new_quote(quote); // Use stored country
 });
 
-When("I select packages {string} and {string}", { timeout: 240000 }, async (packageName1: string, packageName2: string) =>{
-  await loginPage.selectPackage(packageName1,packageName2);
+When("I select packages {string} and {string} for country {string}", { timeout: 300000 }, async (packageName1: string, packageName2: string, country: string) =>{
+  await loginPage.selectPackage(packageName1, packageName2, country);
 });
 
 When("I successfully created the quote", { timeout: 180000 }, async () =>{

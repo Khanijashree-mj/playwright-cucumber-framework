@@ -9,7 +9,7 @@
     "test": "cross-env ENV=prod FORCE_COLOR=0 cucumber-js --config=cucumber.json || true",
     "test:dry-run": "cucumber-js --config=cucumber.json --dry-run",
     "test:validate-steps": "cucumber-js --dry-run --require-module ts-node/register --require './e2e/step_definitions/**/*.ts' --require './e2e/hooks/**/*.ts' './e2e/features/*.feature'",
-    "posttest": "npx ts-node e2e/helper/report/report.ts",
+    "posttest": "npx ts-node e2e/helper/report/report.ts && open test-results/reports/index.html",
     "test:failed": "cucumber-js -p rerun @rerun.txt"
   },
   "repository": {

@@ -15,6 +15,8 @@
       "headerText": "//h2[contains(text(),'Test login')]"
     },
     "leadPage": {
+      "app_launcher":"//button[@title='App Launcher']",
+      "RC_Sales_App":"//a[@data-label='RC Sales']",
       "leadtab":"//one-app-nav-bar-item-root[@data-id='Lead']",
       "new_button":"(//a[@title='New'])[1]",
       "bisuat_new_button":"//button[@name='New']",
@@ -36,18 +38,19 @@
       "lead_show_more_option_btn":"(//li//span[text()='Show more actions'])[2]",
       "lead_change_owner_btn":"//button//span[text()='Change Owner']",
       "lead_search_user_field":"//input[@placeholder='Search Users...']",
+      "lead_owner_dropdown_option":"//div[@role='listbox']//ul[@role='presentation']//li[@role='presentation' and not(contains(@class, 'invisible'))]//a[@role='option']",
       "lead_owner":"//lightning-base-combobox-item[.//span[contains(@title,'${leaddata.lead_owner_name}')]]",
       "change_owner":"//button[text()='Change Owner' and @type='button']",
       "convert_lead":"//a[span='Convert']",
       "Details_tab":"//li[@title='Details']",
       "edit_button":"//button[@title='Edit State']",
       "billing_country_drp_dwn":"//button[@aria-label='Billing Country']",
-      "fill_city":"//input[@name='City__c']",
+      "billing_country_drp_dwn_Proservira":"//button[@aria-label='Country']",
       "fill_city_1":"//input[@name='city']",
+      "fill_city":"//input[@name='City__c']",
       "fill_Zip":"//input[@name='Zip_Code__c']",
       "fill_Zip_1":"//input[@name='postalCode']",
       "fill_country":"//input[@name='country']",
-      "fill_state":"//input[@name='province']",
       "fill_state_1":"//input[@name='province']",
       "fill_street":"//textarea[@name='street']",
       "save_btn":"//button[@name='SaveEdit']",
@@ -105,7 +108,9 @@
       "SA_quote_Status_dropdown":"//button[@aria-label='Status']",
       "SA_quote_type_dropdown":"//button[@aria-label='Quote Type']",
       "SA_quote_type_option":"//span[@title='Agreement']",
-      "SA_quote_status_option":"//span[@title='Active']"
+      "SA_quote_status_option":"//span[@title='Active']",
+      "SA_start_date":"//input[@name='Start_Date__c']",
+      "SA_end_date":"//input[@name='End_Date__c']"
 
 
     },

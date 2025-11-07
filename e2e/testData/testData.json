@@ -1,8 +1,8 @@
 {
   "users": {
     "gciUser": {
-      "username": "khanijashree.mj@ringcentral.com.gci",
-      "password": "Khani",
+      "username": "automation.crm@abs.rclabenv.com.gci",
+      "password": "Test!123",
       "description": "GCI organization user",
       "environment": "GCI"
     },
@@ -20,14 +20,15 @@
     },
     "RingCXdev": {
       "username": "khanijashree.mj@ringcentral.com.ringcxdev1",
-      "password": "Khani@", 
+      "password": "Khani", 
       "description": "RingCXdev organization user",
       "environment": "RingCXdev"
     },
-    "validUser": {
-      "username": "khanijashree.mj@ringcentral.com.gci",
-      "password": "Khani",
-      "description": "Default valid test user for successful login"
+    "Proservira": {
+      "username": "khanijashree.mj@ringcentral.com.Proservira",
+      "password": "Khani", 
+      "description": "Proservira organization user",
+      "environment": "Proservira"
     }
    
   },
@@ -37,47 +38,58 @@
       "State":"california",
       "Zipcode":"94002",
       "Street":"#22/1 industrial area",
-      "Country":"United States"
+      "Country":"United States",
+      "Area_code_state":"California",
+      "Area_code_provience":"Alpine"
+
     },
     "UK": {
       "City": "London",
       "State":"England",
       "Zipcode":"N1 0NU",
       "Street":"83 Upper St",
-      "Country":"United Kingdom"
+      "Country":"United Kingdom",
+      "Area_code_state":"Avon",
+      "Area_code_provience":"Bristol"
     },
     "CA": {
       "City": "Toronto",
       "State":"Ontario",
       "Zipcode":"M5H 2N2",
       "Street":"100 Queen Street West",
-      "Country":"Canada"
+      "Country":"Canada",
+      "Area_code":"416",
+      "Area_code_select":"416"
     },
     "AU": {
       "City": "Sydney",
       "State":"New South Wales",
       "Zipcode":"2000",
       "Street":"1 George Street",
-      "Country":"Australia"
+      "Country":"Australia",
+      "Area_code":"02",
+      "Area_code_select":"02"
     },
     "IN": {
       "City": "Mumbai",
       "State":"Maharashtra",
       "Zipcode":"400001",
       "Street":"Fort District",
-      "Country":"India"
+      "Country":"India",
+      "Area_code":"22",
+      "Area_code_select":"22"
     }
   },
   "forms": {
     "leadform": {
-      "first_name": "Pilot",
-      "last_name": "CK1991",
-      "company_name": "Pilot script1991",
+      "first_name": "PilotTest",
+      "last_name": "07122007",
+      "company_name": "Test data generator script",
       "email": "khanijashree.mj@ringcentral.com",
       "contact_phone":"+16508038000",
       "lead_source":"ZoomInfo",
       "website":"www.khaniautomation.com",
-      "lead_owner_name":"Khanijashree MJ"
+      "lead_owner_name":"Khanijashree MJ "
     },
     "quoteform":{
 
@@ -110,7 +122,8 @@
       "Dev":"https://rc--proservira.sandbox.lightning.force.com",
       "GCI":"https://rc--gci.sandbox.my.salesforce.com",
       "BISUAT":"https://rc--bisuat.sandbox.my.salesforce.com",
-      "RingCXdev":"https://rc--ringcxdev1.sandbox.my.salesforce.com"
+      "RingCXdev":"https://rc--ringcxdev1.sandbox.my.salesforce.com",
+      "Proservira":"https://rc--proservira.sandbox.lightning.force.com"
     }
     
   },

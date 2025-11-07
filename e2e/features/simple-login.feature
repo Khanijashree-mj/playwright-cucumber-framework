@@ -1,4 +1,4 @@
-Feature: Example-Driven Lead Creation Tests
+Feature: Quote creation workflow
   Data-driven tests using Scenario Outline with Examples for different countries
 
   @country-examples
@@ -8,13 +8,13 @@ Feature: Example-Driven Lead Creation Tests
     And I create lead with country "<country>"
     And I convert it to "opportunity"
     And I create new "sales quote"
-    And I select packages "<package1>" and "<package2>"
+    And I select packages "<package1>" and "<package2>" for country "<country>"
     And I successfully created the quote
 
     @us
     Examples:
-    | country | environment |user           | package1                 | package2                                       |
-    | US      | GCI      | GCIUser          | Office-RingEX Premium | Engage Digital Standalone-concurrent seat based (USD)| 
+    | country | environment | user           | package1                 | package2                                       |
+    | UK     | GCI         |    gciUser        | Office-RingEX Premium | Engage Digital Standalone-concurrent seat based| 
 
 
     #
