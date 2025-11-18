@@ -1,17 +1,14 @@
 import { expect, Locator, Page } from "@playwright/test";
 import { BasePage } from "./BasePage";
-import { DynamicLocatorManager } from "../objectRepository/managers/DynamicLocatorManager";
-import { TestDataManager } from "../utils/TestDataManager";
 import { CommonFunctions } from "../utils/CommonFunctions";
 import { context } from "@cucumber/cucumber";
 
 /**
  * LoginPage - Clean implementation for environment-based lead creation testing
  * Only contains methods used by the feature file
+ * Inherits locatorManager, testDataManager, and _getLocator() from BasePage
  */
 export class LoginPage extends BasePage {
-  private locatorManager: DynamicLocatorManager;
-  private testDataManager: TestDataManager;
   private generatedLastName: string = ''; // Store generated last name for reuse
   private currentUsername: string = ''; // Store current logged-in username
 
@@ -48,15 +45,7 @@ export class LoginPage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    this.locatorManager = DynamicLocatorManager.getInstance();
-    this.testDataManager = TestDataManager.getInstance();
-    
-    // Load patterns repository
-    try {
-      this.locatorManager.loadRepository('patterns');
-    } catch (error) {
-      console.log('Pattern repository already loaded or error loading:', error);
-    }
+    // locatorManager and testDataManager are now inherited from BasePage
   }
 
   // =============================================================================
@@ -131,12 +120,28 @@ export class LoginPage extends BasePage {
     await this.page.waitForLoadState('domcontentloaded');
     await this.page.waitForTimeout(10000); // Increased wait time
     
+    // Switch to RC Sales app first (before finding Lead tab)
+    try {
+      console.log("🔄 Checking if RC Sales app is already opened...");
+      await this.page.waitForSelector(this._getLocator('leadPage.app_launcher'), { timeout: 5000 });
+      await this.common.click(this._getLocator('leadPage.app_launcher'));
+      await this.common.click(this._getLocator('leadPage.RC_Sales_App'));
+      await this.page.waitForTimeout(5000);
+      console.log("✅ Switched to RC Sales app");
+    } catch (error) {
+      console.log("⚠️ RC Sales app already opened or not available");
+    }
+    
     // Wait for Lead tab to be visible before clicking
+    let leadTabClicked = false;
     try {
       await this.page.waitForSelector(this._getLocator('leadPage.leadtab').replace('xpath=', ''), { 
         state: 'visible', 
         timeout: 15000 
       });
+      await this.common.click(this._getLocator('leadPage.leadtab'));
+      console.log("✅ Leads tab clicked");
+      leadTabClicked = true;
     } catch (error) {
       console.log("⚠️ Lead tab not found with primary locator, trying alternative...");
       // Try alternative Lead tab locators
@@ -158,22 +163,17 @@ export class LoginPage extends BasePage {
           console.log(`✅ Found Lead tab with alternative selector: ${selector}`);
           await this.common.click(`xpath=${selector}`);
           console.log("✅ Leads tab clicked with alternative selector");
-          return;
+          leadTabClicked = true;
+          break;
         } catch (altError) {
           continue;
         }
       }
-      throw new Error("Could not find Lead tab with any selector");
+      
+      if (!leadTabClicked) {
+        throw new Error("Could not find Lead tab with any selector");
+      }
     }
-
-    //Switch to RC sales app first
-    await this.common.click(this._getLocator('leadPage.app_launcher'));
-    await this.common.click(this._getLocator('leadPage.RC_Sales_App'));
-    await this.page.waitForTimeout(5000);
-
-    // Click with primary locator if found
-    await this.common.click(this._getLocator('leadPage.leadtab'));
-    console.log("✅ Leads tab clicked");
     
     // Wait longer for leads page to load completely
     console.log("⏳ Waiting for Leads page to load...");
@@ -212,7 +212,8 @@ export class LoginPage extends BasePage {
     await this.page.waitForTimeout(2000);
     await this.common.switchFrame_Fill_fields(frame, this._getLocator('leadPage.lead_last_name'), this.generatedLastName);
     console.log(`✅ Last name filled: ${this.generatedLastName}`);
-    await this.common.switchFrame_Fill_fields(frame, this._getLocator('leadPage.lead_company_name'), leaddata.company_name);
+    const company_name= leaddata.company_name + " " + this.generatedLastName;
+    await this.common.switchFrame_Fill_fields(frame, this._getLocator('leadPage.lead_company_name'), company_name);
     console.log("✅ Company filled");
     await this.common.switchFrame_Fill_fields(frame, this._getLocator('leadPage.lead_email'), leaddata.email);
     console.log("✅ Email filled");
@@ -249,21 +250,25 @@ export class LoginPage extends BasePage {
     console.log("✅ Show more actions clicked");
     await this.common.click(this._getLocator('leadPage.lead_change_owner_btn'));
     console.log("✅ Change owner button clicked");
-    await this.common.fill(this._getLocator('leadPage.lead_search_user_field'), leaddata.lead_owner_name);
-    console.log("✅ User search field filled");
     
-    // Wait for dropdown to appear and click first visible option
-    console.log(`⏳ Looking for user: ${leaddata.lead_owner_name}`);
+    // Click on search field but don't fill anything
+    await this.page.waitForTimeout(2000);
+    const searchField = this.page.locator(this._getLocator('leadPage.lead_search_user_field')).first();
+    await searchField.click();
+    console.log("✅ Clicked on search field (not filling anything)");
+    
+    // Press Down arrow to open dropdown and highlight first option
+    await this.page.waitForTimeout(1000);
+    await this.page.keyboard.press('ArrowDown');
+    console.log("⏳ Pressed ArrowDown to open dropdown");
+    
     await this.page.waitForTimeout(2000);
     
-    // Wait for dropdown options to load
-    console.log("⏳ Waiting for dropdown options to load...");
-    await this.page.waitForSelector(this._getLocator('leadPage.lead_owner_dropdown_option'), { timeout: 15000, state: 'visible' });
-    await this.page.waitForTimeout(1000);
+    // Press Enter to select the highlighted option
+    await this.page.keyboard.press('Enter');
+    console.log("✅ Pressed Enter to select first option");
     
-    // Click first available user from the dropdown
-    await this.page.locator(this._getLocator('leadPage.lead_owner_dropdown_option')).first().click();
-    console.log("✅ First user option clicked from dropdown");
+    await this.page.waitForTimeout(2000);
 
     await this.common.click(this._getLocator('leadPage.change_owner'));
     console.log("✅ Change owner completed");
@@ -611,23 +616,23 @@ export class LoginPage extends BasePage {
     
       console.log(`🎉 Complete lead creation and conversion workflow finished successfully`);
 
-       //-----------commented for time being-----------*/
-//bisuat
+       /-----------commented for time being-----------*/
+//   bisuat
     //await this.page.goto("https://rc--bisuat.sandbox.lightning.force.com/lightning/r/Opportunity/006U700000JBGL4IAP/view", { waitUntil: 'domcontentloaded' });
       //gci
-     // await this.page.goto("https://rc--gci.sandbox.lightning.force.com/lightning/r/Opportunity/006Ot00000TNeaMIAT/view", { waitUntil: 'domcontentloaded' });
+    // await this.page.goto("https://rc--gci.sandbox.lightning.force.com/lightning/r/Opportunity/006Ot00000TX5LHIA1/view", { waitUntil: 'domcontentloaded' });
       // Wait for opportunity page to load completely after direct navigation
       console.log("🔀 Direct navigation to opportunity completed!"); /// */
       await this.page.waitForLoadState('domcontentloaded', { timeout: 30000 });
-        //await this.page.waitForLoadState('networkidle', { timeout: 60000 });
+        //await this.page.waitForLoadState('networkidle', { timeout: 60000 });*/
       console.log("✅ Opportunity page loaded successfully");
-        await this.page.waitForTimeout(5000);
+        await this.page.waitForTimeout(10000);
 
        // Save the current URL
       const oppty_Url = this.page.url();
       console.log("📋 Opportunity page URL:", oppty_Url);
       
-        // Click on Account Name link to navigate to account page
+        //---------Click on Account Name link to navigate to account page---------------------
         console.log("🔄 Clicking Account Name link...");
         await this.page.locator(this._getLocator('OpportunityPage.Account_Name_Link')).click();
         await this.page.waitForLoadState('domcontentloaded');
@@ -833,7 +838,7 @@ export class LoginPage extends BasePage {
        
        // Navigate back to opportunity page
        await this.page.goto(oppty_Url, { waitUntil: 'domcontentloaded' });
-
+/*///-----------------commented for time being----------------*///---------*/
       // Click on Quote tab to access quote creation
        console.log("🔄 Clicking Quote tab...");
         await this.page.locator(this._getLocator('OpportunityPage.Quote_tab')).waitFor({ state: 'visible', timeout: 15000 });
@@ -866,76 +871,123 @@ export class LoginPage extends BasePage {
       
       const newquoteURL = this.page.url();
       console.log("📋 New Quote URL:", newquoteURL);
-
+      await this.page.waitForTimeout(8000); 
 
   }
 
 
   // Method to select package by name from examples table
-  async selectPackage(packageName1: string, packageName2: string, country: string): Promise<void> {
+  async selectPackage(packageName1: string, packageName2: string, packageName3: string, country: string): Promise<void> {
       // Use the current page (new page was already handled in create_new_quote)
       const newPage = this.page;
      
-      
-      
       // Split package names: If has '-' use part after '-', otherwise use full name
       const actualPackage1 = packageName1.includes('-') ? packageName1.split('-')[1].trim() : packageName1.trim();
       const actualPackage2 = packageName2.includes('-') ? packageName2.split('-')[1].trim() : packageName2.trim();
+      const actualPackage3 = packageName3.includes('-') ? packageName3.split('-')[1].trim() : packageName3.trim();
       
       // Extract header names: If has '-' use part before '-', otherwise use full name  
+      const headerName1 = packageName1.includes('-') ? packageName1.split('-')[0].trim() : packageName1.trim();
       const headerName2 = packageName2.includes('-') ? packageName2.split('-')[0].trim() : packageName2.trim();
+      const headerName3 = packageName3.includes('-') ? packageName3.split('-')[0].trim() : packageName3.trim();
       
-      console.log(`📦 Package 1: "${packageName1}" → Select: "${actualPackage1}"`);
-      await this.page.waitForTimeout(8000); 
+      console.log(`🔍 Packages to select: Package1="${headerName1}", Package2="${headerName2}", Package3="${headerName3}"`);
       
-      // Click specific office package select button
-      console.log(`🔍 Looking for: ${this._getLocator('OpportunityPage.Package_select_button').replace('{PACKAGE_NAME}', actualPackage1)}`);
-      await this.page.locator(this._getLocator('OpportunityPage.Package_select_button').replace('{PACKAGE_NAME}', actualPackage1)).first().click();
-      console.log(`✅ Successfully selected: ${actualPackage1}`);
-
-      //---------Multi-product quote creation -----------//
-      
-        console.log(`📦 Package 2: "${packageName2}" → Header: "${headerName2}" → Select: "${actualPackage2}"`);
-        //-------select from dropdown-------------
-        // Use selectOption which handles opening dropdown and selecting automatically
-        await newPage.locator(this._getLocator('OpportunityPage.Service_dropdown')).selectOption({ label: headerName2 });
-        console.log(`✅ Successfully selected header: ${headerName2}`);
+      // Always unselect the default Office package first (clean slate approach)
+      console.log(`🔄 Unselecting default Office package to start fresh...`);
+      await newPage.waitForTimeout(3000);
+      try {
+        await newPage.locator(this._getLocator('OpportunityPage.Unselect_office_package_button')).click();
+        console.log(`✅ Unselected default Office package`);
+        await newPage.waitForTimeout(2000);
         
-        // Click specific package select button
-        console.log(`🔍 Looking for package button with text: "${actualPackage2}"`);
-        await newPage.locator(this._getLocator('OpportunityPage.Package_select_button').replace('{PACKAGE_NAME}', actualPackage2)).click();
-        console.log(`✅ Successfully clicked package button for: ${actualPackage2}`);
-
-        // Debug: Check what package elements are available
-        const packageElements = await newPage.locator('//span[contains(text(),"seat")]').allTextContents();
-        console.log(`🔍 Available package elements with "seat": ${JSON.stringify(packageElements)}`);
-        
-        console.log(`🔍 Looking for quantity input field`);
-        // Use updated input_seats locator from patterns.json
-        const inputField = newPage.locator(this._getLocator('OpportunityPage.input_seats')).first();
-        await inputField.clear();
-        console.log(`🧹 Cleared input field for: ${actualPackage2}`);
-        await inputField.fill("5");
-        console.log(`✅ Successfully filled seats for: ${actualPackage2}`);
-
-        console.log(`✅ Successfully selected: ${actualPackage2} from ${headerName2} group`);
-// console.log(`single product quote-no other packages found to sele
-
+        // Close the Office package header to collapse it
+        console.log(`🔄 Closing Office package header...`);
+        await newPage.locator(this._getLocator('OpportunityPage.Close_package_header_button')).click();
+        console.log(`✅ Office package header closed`);
+        await newPage.waitForTimeout(1000);
+      } catch (error) {
+        console.log(`⚠️  Could not find Office unselect button or close header button, continuing...`);
+      }
       
+      // Use switch-based helper method to select packages
+      console.log(`\n🚀 Starting package selection with switch-based approach...\n`);
+      await newPage.waitForTimeout(3000);
       
+      // Handle Package 1 - 5 seats
+      await this.handlePackageSelection(newPage, packageName1, headerName1, actualPackage1, 1, 5);
       
+      // Handle Package 2 - 3 seats
+      await this.handlePackageSelection(newPage, packageName2, headerName2, actualPackage2, 2, 3);
+      
+      // Handle Package 3 - 7 seats
+      await this.handlePackageSelection(newPage, packageName3, headerName3, actualPackage3, 3, 7);
+    
       console.log(`🔄 Clicking Add Products tab...`);
       await newPage.locator(this._getLocator('OpportunityPage.Add_Products_tab')).click();
       console.log(`✅ Add Products tab clicked`);
       
-      console.log(`🔄 Clicking Add-ons for: ${headerName2}`);
-      await newPage.locator(this._getLocator('OpportunityPage.Add-ons').replace('{PACKAGE_NAME}', headerName2)).click();
-      console.log(`✅ Add-ons clicked`);
+      // Wait for page to fully load after clicking Add Products tab
+      console.log(`⏳ Waiting for Add Products page to load...`);
+      await newPage.waitForLoadState('domcontentloaded');
+      await newPage.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => console.log("⚠️ Network not idle, continuing..."));
+      await newPage.waitForTimeout(8000); // Increased wait for dynamic content to load
+      
+      try{
+        console.log(`🔄 Clicking Add-ons for: ${headerName1}`);
+        const addOnLocator = newPage.locator(this._getLocator('OpportunityPage.Add-ons').replace('{PACKAGE_NAME}', headerName1));
+        // Wait for Add-ons element to be visible before clicking
+        await addOnLocator.waitFor({ state: 'visible', timeout: 20000 }); // Increased timeout
+        await addOnLocator.click();
+        console.log(`✅ Add-ons clicked`);
 
-      console.log(`🔄 Clicking Add-on product...`);
+        console.log(`🔄 Clicking Add-on product...`);
         await newPage.locator(this._getLocator('OpportunityPage.Add-on_product')).click();
         console.log(`✅ Add-on product clicked`);
-      
+        
+        try{
+          console.log(`🔄 Clicking Add-ons for: ${headerName2}`);
+          const addOnLocator2 = newPage.locator(this._getLocator('OpportunityPage.Add-ons').replace('{PACKAGE_NAME}', headerName2));
+          await addOnLocator2.waitFor({ state: 'visible', timeout: 10000 });
+          await addOnLocator2.click();
+          console.log(`✅ Add-ons clicked`);
+    
+          console.log(`🔄 Clicking Add-on product...`);
+            await newPage.locator(this._getLocator('OpportunityPage.Add-on_product')).click();
+            console.log(`✅ Add-on product clicked`);
+        }catch(error){
+          console.log(`🔄 Clicking Add-ons for: ${headerName3}`);
+          const addOnLocator3 = newPage.locator(this._getLocator('OpportunityPage.Add-ons').replace('{PACKAGE_NAME}', headerName3));
+          await addOnLocator3.waitFor({ state: 'visible', timeout: 10000 });
+          await addOnLocator3.click();
+          console.log(`✅ Add-ons clicked`);
+    
+          console.log(`🔄 Clicking Add-on product...`);
+          await newPage.locator(this._getLocator('OpportunityPage.Add-on_product')).click();
+          console.log(`✅ Add-on product clicked`);
+        }
+      }finally{
+        console.log(`🔄 products added successfully`);
+      }
+
+      if(headerName1 === 'Engage Voice Standalone' || headerName2 === 'Engage Voice Standalone' || headerName3 === 'Engage Voice Standalone'){
+        console.log(`🔄 select storage for Engage Voice Standalone package...`);
+        await newPage.locator(this._getLocator('OpportunityPage.Add-ons-search-field')).click(); // Explicit click to focus
+        console.log(`✅ Clicked on input field`);
+        await newPage.locator(this._getLocator('OpportunityPage.Add-ons-search-field')).fill('Storage');
+        console.log(`✅ Filled storage field`);
+        await newPage.waitForTimeout(2000);
+        await newPage.locator(this._getLocator('OpportunityPage.Add-on_product')).click();
+        console.log(`✅ storage product added`);
+        await newPage.waitForTimeout(2000);
+        await newPage.locator(this._getLocator('OpportunityPage.Add-on_product')).clear
+        await newPage.locator(this._getLocator('OpportunityPage.Add-ons-search-field')).fill('Overage');
+        console.log(`✅ Filled Overage field`);
+        await newPage.waitForTimeout(2000);
+        await newPage.locator(this._getLocator('OpportunityPage.Add-on_product')).filter({ hasNot: newPage.locator('[disabled]') }).first().click();
+        console.log(`✅ Overage product added`);
+        await newPage.waitForTimeout(2000);
+      }
 
       
       
@@ -943,9 +995,29 @@ export class LoginPage extends BasePage {
       await newPage.locator(this._getLocator('OpportunityPage.Price_tab')).click();
       console.log(`✅ Price tab clicked`);
       
-      console.log(`🔄 Clicking Save Changes...`);
-      await newPage.locator(this._getLocator('OpportunityPage.save_changes')).click();
-      console.log(`✅ Original save_changes locator worked`);
+      // Wait for Price page to load completely
+      console.log(`⏳ Waiting for Price page to load...`);
+      await newPage.waitForLoadState('domcontentloaded');
+      await newPage.waitForTimeout(5000); // Increased wait for calculations
+      
+      console.log(`🔄 Waiting for Save Changes button to become enabled...`);
+      const saveChangesBtn = newPage.locator(this._getLocator('OpportunityPage.save_changes'));
+      await saveChangesBtn.waitFor({ state: 'visible', timeout: 10000 });
+      
+      // Wait for button to become enabled (not disabled)
+      const xpathSelector = this._getLocator('OpportunityPage.save_changes').replace('xpath=', '');
+      await newPage.waitForFunction(
+        (xpath) => {
+          const btn = document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue as HTMLElement;
+          return btn && !btn.hasAttribute('disabled') && !btn.classList.contains('disabled');
+        },
+        xpathSelector,
+        { timeout: 60000 }
+      );
+      console.log(`✅ Save Changes button is now enabled`);
+      
+      await saveChangesBtn.click();
+      console.log(`✅ Save Changes clicked`);
 
       console.log(`⏳ Waiting for progress bar to complete...`);
       
@@ -999,7 +1071,7 @@ export class LoginPage extends BasePage {
             }
             
             // If container still exists but progress bar is gone, something is wrong
-            await newPage.waitForTimeout(3000);
+
           }
         }
         
@@ -1012,12 +1084,17 @@ export class LoginPage extends BasePage {
       console.log(`🎯 Progress complete, now clicking Quote Details tab...`);
       
       // Additional safety wait after completion
-      await newPage.waitForTimeout(3000);
+      //await newPage.waitForTimeout(3000);
       console.log(`✅ Post-processing wait completed`);
       
       // Click Quote Details tab after 100% completion
       await newPage.locator(this._getLocator('OpportunityPage.Quote_Details')).click({ force: true });
       console.log(`✅ Quote Details tab clicked successfully`);
+      
+      // Wait for Quote Details page to load completely
+      console.log(`⏳ Waiting for Quote Details page to load...`);
+      await newPage.waitForLoadState('domcontentloaded');
+      await newPage.waitForTimeout(3000);
          
       try{
         //await newPage.locator(this._getLocator('OpportunityPage.Quote_Details')).click();
@@ -1087,18 +1164,206 @@ export class LoginPage extends BasePage {
 
   }
 
+  /**
+   * Helper method to handle package selection based on package type using switch statement
+   * @param page - The page object
+   * @param fullPackageName - Full package name with header (e.g., "Office-RingEX Premium")
+   * @param headerName - Package header/category (e.g., "Office", "Engage Digital Standalone", "Events")
+   * @param actualPackage - Actual package name (e.g., "RingEX Premium", "concurrent seat based")
+   * @param packageNumber - Package position (1, 2, or 3)
+   * @param seats - Number of seats to fill
+   */
+  private async handlePackageSelection(
+    page: any, 
+    fullPackageName: string, 
+    headerName: string, 
+    actualPackage: string, 
+    packageNumber: number, 
+    seats: number
+  ): Promise<void> {
+    // Skip empty packages
+    if (!fullPackageName || fullPackageName.trim() === '') {
+      console.log(`⏭️  Skipping empty package${packageNumber}`);
+      return;
+    }
+
+    console.log(`\n📦 Package ${packageNumber}: "${fullPackageName}"`);
+    console.log(`   └─ Header: "${headerName}" | Actual: "${actualPackage}" | Seats: ${seats}`);
+    
+    await page.waitForTimeout(3000);
+
+    // Switch statement to handle different package types
+    switch(headerName) {
+      case 'Office':
+        console.log(`🏢 Handling Office package...`);
+        // Select Office from dropdown (same as other packages now)
+        await page.locator(this._getLocator('OpportunityPage.Service_dropdown')).selectOption({ label: headerName });
+        console.log(`✅ Selected header: ${headerName}`);
+        
+        // Click package button
+        console.log(`🔍 Looking for Office package button: ${actualPackage}`);
+        await page.locator(this._getLocator('OpportunityPage.Package_select_button').replace('{PACKAGE_NAME}', actualPackage)).first().click();
+        console.log(`✅ Successfully selected Office: ${actualPackage}`);
+        // Note: No input filling for Office as per user's requirement
+        break;
+
+      case 'Engage Digital Standalone':
+        console.log(`💬 Handling Engage Digital Standalone package...`);
+        // Select from dropdown
+        await page.locator(this._getLocator('OpportunityPage.Service_dropdown')).selectOption({ label: headerName });
+        console.log(`✅ Selected header: ${headerName}`);
+        
+        // Click package button
+        console.log(`🔍 Looking for package button: ${actualPackage}`);
+        await page.locator(this._getLocator('OpportunityPage.Package_select_button').replace('{PACKAGE_NAME}', actualPackage)).click();
+        console.log(`✅ Clicked package button`);
+        
+        // Fill input field
+        console.log(`🔍 Looking for quantity input field within ${headerName} section`);
+        const inputFieldED = page.locator(this._getLocator('OpportunityPage.input_seats_by_group').replace('{GROUP_NAME}', headerName)).first();
+        await inputFieldED.waitFor({ state: 'visible', timeout: 10000 });
+        await inputFieldED.clear();
+        await inputFieldED.fill(seats.toString());
+        console.log(`✅ Filled ${seats} seats`);
+        
+        // Blur to trigger validation
+        await page.evaluate(() => { (document.activeElement as HTMLElement)?.blur(); });
+        console.log(`🎯 Triggered validation (blur)`);
+        break;
+
+        case 'Engage Voice Standalone':
+         console.log(`💬 Handling Engage Voice Standalone package...`);
+        // Select from dropdown
+        await page.locator(this._getLocator('OpportunityPage.Service_dropdown')).selectOption({ label: headerName });
+        console.log(`✅ Selected header: ${headerName}`);
+        
+        // Click package button
+        console.log(`🔍 Looking for package button: ${actualPackage}`);
+        await page.locator(this._getLocator('OpportunityPage.Package_select_button').replace('{PACKAGE_NAME}', actualPackage)).click();
+        console.log(`✅ Clicked package button`);
+        
+        // Fill input field
+        console.log(`🔍 Looking for quantity input field within ${headerName} section`);
+        const inputFieldEV = page.locator(this._getLocator('OpportunityPage.input_seats_by_group').replace('{GROUP_NAME}', headerName)).first();
+        await inputFieldEV.waitFor({ state: 'visible', timeout: 10000 });
+        await inputFieldEV.clear();
+        await inputFieldEV.fill(seats.toString());
+        console.log(`✅ Filled ${seats} seats`);
+        
+        // Blur to trigger validation
+        await page.evaluate(() => { (document.activeElement as HTMLElement)?.blur(); });
+        console.log(`🎯 Triggered validation (blur)`);
+        break;
+
+      case 'Events':
+        console.log(`🎉 Handling Events package...`);
+        // Select from dropdown
+        await page.locator(this._getLocator('OpportunityPage.Service_dropdown')).selectOption({ label: headerName });
+        console.log(`✅ Selected header: ${headerName}`);
+        
+        // Click package button
+        console.log(`🔍 Looking for package button: ${actualPackage}`);
+        await page.locator(this._getLocator('OpportunityPage.Package_select_button').replace('{PACKAGE_NAME}', actualPackage)).click();
+        console.log(`✅ Clicked package button`);
+        
+        // Fill input field
+        console.log(`🔍 Looking for quantity input field within ${headerName} section`);
+        const inputFieldEvents = page.locator(this._getLocator('OpportunityPage.input_seats_by_group').replace('{GROUP_NAME}', headerName)).first();
+        await inputFieldEvents.waitFor({ state: 'visible', timeout: 10000 });
+        await inputFieldEvents.clear();
+        await inputFieldEvents.fill(seats.toString());
+        console.log(`✅ Filled ${seats} seats`);
+        
+        // Blur to trigger validation
+        await page.evaluate(() => { (document.activeElement as HTMLElement)?.blur(); });
+        console.log(`🎯 Triggered validation (blur)`);
+        break;
+
+      case 'RingCentral Contact Center':
+        console.log(`📞 Handling RingCentral Contact Center package...`);
+        // Select from dropdown
+        await page.locator(this._getLocator('OpportunityPage.Service_dropdown')).selectOption({ label: headerName });
+        console.log(`✅ Selected header: ${headerName}`);
+        
+        // Click package button
+        console.log(`🔍 Looking for package button: ${actualPackage}`);
+        await page.locator(this._getLocator('OpportunityPage.Package_select_button').replace('{PACKAGE_NAME}', actualPackage)).click();
+        console.log(`✅ Clicked package button`);
+        
+        // Fill input field
+        console.log(`🔍 Looking for quantity input field within ${headerName} section`);
+        const inputFieldCC = page.locator(this._getLocator('OpportunityPage.input_seats_by_group').replace('{GROUP_NAME}', headerName)).first();
+        await inputFieldCC.waitFor({ state: 'visible', timeout: 10000 });
+        await inputFieldCC.clear();
+        await inputFieldCC.fill(seats.toString());
+        console.log(`✅ Filled ${seats} seats`);
+        
+        // Blur to trigger validation
+        await page.evaluate(() => { (document.activeElement as HTMLElement)?.blur(); });
+        console.log(`🎯 Triggered validation (blur)`);
+        break;
+
+      case 'Professional Services':
+        console.log(`🛠️  Handling Professional Services package...`);
+        // Select from dropdown
+        await page.locator(this._getLocator('OpportunityPage.Service_dropdown')).selectOption({ label: headerName });
+        console.log(`✅ Selected header: ${headerName}`);
+        
+        // Click package button
+        console.log(`🔍 Looking for package button: ${actualPackage}`);
+        await page.locator(this._getLocator('OpportunityPage.Package_select_button').replace('{PACKAGE_NAME}', actualPackage)).click();
+        console.log(`✅ Clicked package button`);
+        break;
+
+      default:
+        console.log(`❓ Unknown package type: "${headerName}" - attempting generic selection`);
+        break;
+    }
+    
+    console.log(`✅ Package ${packageNumber} selection completed\n`);
+  }
+
   async successfully_created_the_quote(): Promise<void>{
       // Wait for new page/tab to open after clicking Request Invoice Approval link 
       const uqt_url = this.page.url();
 
-      // Wait for new page and click link
-      const [approvalPage] = await Promise.all([
-        this.page.context().waitForEvent('page'), // Wait for new page/tab
-        this.page.locator(this._getLocator('OpportunityPage.Request_invoice_approval_link')).click()
-      ]);
+      // Click approval link with IIFE for try-catch handling
+      await (async () => {
+        try {
+          const pagesBefore = this.page.context().pages().length;
+          console.log(`📊 Pages count before click: ${pagesBefore}`);
+          
+          await this.page.locator(this._getLocator('OpportunityPage.Request_invoice_approval_link')).click();
+          console.log(`✅ Request invoice approval link clicked`);
+          await this.page.waitForTimeout(3000); // Wait for page to start opening
+          
+          const pagesAfter = this.page.context().pages().length;
+          console.log(`📊 Pages count after click: ${pagesAfter}`);
+        } catch (error) {
+          console.log(`❌ Request invoice approval link not found, trying inside error notification...`);
+          await this.page.locator(this._getLocator('OpportunityPage.price_tab_Error_notification')).click();
+          console.log(`✅ Error notification clicked`);
+          await this.page.waitForTimeout(1000); // Wait after error notification click
+          
+          const pagesBefore = this.page.context().pages().length;
+          console.log(`📊 Pages count before click (error path): ${pagesBefore}`);
+          
+          await this.page.locator(this._getLocator('OpportunityPage.Request_invoice_approval_link')).click();
+          console.log(`✅ Request invoice approval link clicked from error notification`);
+          await this.page.waitForTimeout(5000); // Wait longer for page to fully open and register
+          
+          const pagesAfter = this.page.context().pages().length;
+          console.log(`📊 Pages count after click (error path): ${pagesAfter}`);
+        }
+      })(); // IIFE - Immediately Invoked Function Expression
       
+      // Get the newest page from context after IIFE completes
+      const pages = this.page.context().pages();
+      const approvalPage = pages[pages.length - 1]; // The last page is the newest
+      console.log(`📋 Total pages in context: ${pages.length}`);
       console.log("🔀 New tab opened - switching focus!");
       
+
       // Bring new tab to front
       await approvalPage.bringToFront();
       
@@ -1316,17 +1581,6 @@ export class LoginPage extends BasePage {
   // PRIVATE HELPER METHODS
   // =============================================================================
 
-  /**
-   * Universal locator fetcher - pass full path like "loginPage.usernameField" or "leadPage.leadtab"
-   * @param fullPath - Complete path to element (e.g., 'loginPage.usernameField', 'leadPage.leadtab')
-   */
-  private _getLocator(fullPath: string): string {
-    try {
-      const result = this.locatorManager.buildFromTemplate(fullPath);
-      return `xpath=${result.locator}`;
-    } catch (error) {
-      console.error(`❌ Locator not found: ${fullPath}`, error);
-      throw error;
-    }
-  }
+  // _getLocator() method is now inherited from BasePage
+
 }

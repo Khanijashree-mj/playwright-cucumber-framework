@@ -51,12 +51,47 @@ Before(async function ({ pickle }) {
   pageFixture.page = page;
 });
 
-AfterStep(async function ({ pickle }) {
-  const img = await pageFixture.page.screenshot({
-    path: `./test-results/screenshot/${pickle.name}.png`,
-    type: "png",
-  });
-  await this.attach(img, "image/png");
+AfterStep(async function ({ pickle, pickleStep }) {
+  // Get all pages/tabs in the current browser context
+  const allPages = context.pages();
+  
+  // Generate a timestamp for unique screenshot naming
+  const timestamp = Date.now();
+  const stepName = pickleStep?.text?.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 50) || 'step';
+  
+  console.log(`📸 Capturing screenshots for ${allPages.length} active page(s) after step: "${pickleStep?.text}"`);
+  
+  // Capture screenshot of each active page/tab
+  for (let i = 0; i < allPages.length; i++) {
+    const currentPage = allPages[i];
+    try {
+      // Check if page is still valid and not closed
+      if (!currentPage.isClosed()) {
+        const pageTitle = await currentPage.title().catch(() => `page_${i}`);
+        const sanitizedTitle = pageTitle.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 30);
+        
+        const screenshotPath = `./test-results/screenshots/${pickle.name}_${stepName}_page${i}_${sanitizedTitle}_${timestamp}.png`;
+        
+        const img = await currentPage.screenshot({
+          path: screenshotPath,
+          type: "png",
+          fullPage: false, // Capture viewport only for performance
+        });
+        
+        // Attach with descriptive label
+        const label = allPages.length > 1 
+          ? `📄 Page ${i + 1}/${allPages.length}: ${pageTitle}` 
+          : `📄 ${pageTitle}`;
+        
+        await this.attach(img, "image/png");
+        console.log(`  ✅ Screenshot saved: Page ${i + 1} - ${pageTitle}`);
+      } else {
+        console.log(`  ⚠️  Page ${i + 1} is closed, skipping screenshot`);
+      }
+    } catch (error) {
+      console.error(`  ❌ Failed to capture screenshot for page ${i + 1}:`, error);
+    }
+  }
 });
 
 After(async function ({ pickle, result }) {

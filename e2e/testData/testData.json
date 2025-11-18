@@ -1,8 +1,8 @@
 {
   "users": {
     "gciUser": {
-      "username": "automation.crm@abs.rclabenv.com.gci",
-      "password": "Test!123",
+      "username": "khanijashree.mj@ringcentral.com.gci",
+      "password": "Khani@2412",
       "description": "GCI organization user",
       "environment": "GCI"
     },
@@ -14,17 +14,17 @@
     },
     "bisuatUser": {
       "username": "kkhanijashree.mj@ringcentral.com.bisuat",
-      "password": "Khani", 
+      "password": "Khani@2412", 
       "description": "BISUAT organization user",
       "environment": "BISUAT"
     },
-    "RingCXdev": {
+    "RingCXdevUser": {
       "username": "khanijashree.mj@ringcentral.com.ringcxdev1",
       "password": "Khani", 
       "description": "RingCXdev organization user",
       "environment": "RingCXdev"
     },
-    "Proservira": {
+    "ProserviraUser": {
       "username": "khanijashree.mj@ringcentral.com.Proservira",
       "password": "Khani", 
       "description": "Proservira organization user",
@@ -89,7 +89,7 @@
       "contact_phone":"+16508038000",
       "lead_source":"ZoomInfo",
       "website":"www.khaniautomation.com",
-      "lead_owner_name":"Khanijashree MJ "
+      "lead_owner_name":"Khanijashree MJ"
     },
     "quoteform":{
 

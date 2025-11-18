@@ -3,43 +3,22 @@ Feature: Quote creation workflow
 
   @country-examples
   Scenario Outline: Create lead with different countries and environments
-    Given I navigate to the "<environment>" login page
-    When I login as "<user>"
-    And I create lead with country "<country>"
-    And I convert it to "opportunity"
-    And I create new "sales quote"
-    And I select packages "<package1>" and "<package2>" for country "<country>"
-    And I successfully created the quote
+    Given User navigate to the "<environment>" login page
+    When User login as "<user>"
+    And User create lead with country "<country>"
+    And User convert it to "opportunity"
+    And User create new "sales quote"
+    And User select packages "<package1>", "<package2>" and "<package3>" for country "<country>"
+    And User successfully created the quote
+    Then User Signup the account
 
     @us
     Examples:
-    | country | environment | user           | package1                 | package2                                       |
-    | UK     | GCI         |    gciUser        | Office-RingEX Premium | Engage Digital Standalone-concurrent seat based| 
-
-
-    #
-     # | country | environment | Office_package_name     | CC_package_name                 | EV_package_name         | ED_package_name                                      | PS_package_name      | Events_package_name    |
-      #| US      | GCI         | RingEX Premium          | Digital Edition Named Seat (USD)| RingCX Named Seats (USD)| Engage Digital Standalone concurrent seat based (USD)| Professional Services| RingCentral Events Pro+|
-
-
-    # @uk
-    # Examples:
-    #   | country | environment | package_name           |
-    #   | UK      | BISUAT      | RingEX Core          |
-
-    # @canada  
-    # Examples:
-    #   | country | environment | package_name           |
-    #   | CA      | BISUAT      | RingEX Advanced        |
-
-    # @australia
-    # Examples:
-    #   | country | environment | package_name           |
-    #   | AU      | GCI         | RingEX Enterprise      |
-
-    # @multiple-packages
-    # Examples:
-    #   | country | environment | package_name           |
-    #   | US      | GCI         | RingEX Core™          |
-    #   | US      | GCI         | RingEX Premium         |
-    #   | US      | GCI         | RingEX Advanced        |
+      | country | environment | user           | package1                                         | package2      | package3           |
+      | UK      | GCI         | gciUser        |Office-RingEX Premium                             |               |                    |
+      | US      | GCI         | gciUser        |Engage Digital Standalone-concurrent seat based   |               |                    |
+      | US      | GCI         | gciUser        |Engage Voice Standalone-RingCX Standard Concurrent|               | Office-RingEX Core |                        
+     # | CA      | BISUAT      | bisuatUser     |Events-RingCentral Events Pro+                    |               |                    |
+     # | AU      | Proservira  | ProserviraUser |RingCentral Contact Center-Ultimate Edition       |               |                    |
+    #  | IN      | GCI         | gciUser        |Professional Services-                            |               | Office-RingEX Premium                  |
+  

@@ -13,7 +13,7 @@ let currentEnvironment: string; // Will be set from Examples table
 // NAVIGATION STEPS
 // =============================================================================
 
-Given("I navigate to the {string} login page", async (environment: string) => {
+Given("User navigate to the {string} login page", async (environment: string) => {
   currentEnvironment = environment; // Store environment for use in login
   loginPage = new LoginPage(pageFixture.page);
   await loginPage.navigateToEnvironmentLoginPage(environment);
@@ -23,16 +23,12 @@ Given("I navigate to the {string} login page", async (environment: string) => {
 // LOGIN STEPS
 // =============================================================================
 
-When("I login as {string}",{ timeout: 100000 }, async (userType: string) => {
+When("User login as {string}",{ timeout: 100000 }, async (userType: string) => {
   // Auto-map environment to user, ignore the userType parameter
   await loginPage.performEnvironmentLogin(currentEnvironment);
 });
 
-// =============================================================================
-// LEAD CREATION AND CONVERSION STEPS
-// =============================================================================
-
-When("I create lead with country {string}", { timeout: 160000 }, async (country: string) => {
+When("User create lead with country {string}", { timeout: 160000 }, async (country: string) => {
   currentCountry = country; // Store country for use in subsequent steps
   try {
     await loginPage.createLeadWithCountry('leadform', country);
@@ -55,18 +51,22 @@ When("I create lead with country {string}", { timeout: 160000 }, async (country:
   }
 });
 
-When("I convert it to {string}", { timeout: 180000 }, async (opportunity: string) =>{
+When("User convert it to {string}", { timeout: 180000 }, async (opportunity: string) =>{
   await loginPage.convertlead_to_opportunity(opportunity, currentCountry); // Use stored country
 });
 
-When("I create new {string}", { timeout: 240000 }, async (quote: string) =>{
+When("User create new {string}", { timeout: 240000 }, async (quote: string) =>{
   await loginPage.create_new_quote(quote); // Use stored country
 });
 
-When("I select packages {string} and {string} for country {string}", { timeout: 300000 }, async (packageName1: string, packageName2: string, country: string) =>{
-  await loginPage.selectPackage(packageName1, packageName2, country);
+When("User select packages {string}, {string} and {string} for country {string}", { timeout: 300000 }, async (packageName1: string, packageName2: string, packageName3: string, country: string) =>{
+  await loginPage.selectPackage(packageName1, packageName2, packageName3, country);
 });
 
-When("I successfully created the quote", { timeout: 180000 }, async () =>{
+When("User successfully created the quote", { timeout: 180000 }, async () =>{
   await loginPage.successfully_created_the_quote();
+});
+
+Then("User Signup the account", { timeout: 180000 }, async () =>{
+  await OpportunityPage.signup_the_account();
 });
