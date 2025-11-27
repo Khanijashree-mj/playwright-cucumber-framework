@@ -12,13 +12,14 @@ Feature: Quote creation workflow
     And User successfully created the quote
     Then User Signup the account
 
-    @us
+    @uk
     Examples:
-      | country | environment | user           | package1                                         | package2      | package3           |
-      | UK      | GCI         | gciUser        |Office-RingEX Premium                             |               |                    |
-      | US      | GCI         | gciUser        |Engage Digital Standalone-concurrent seat based   |               |                    |
-      | US      | GCI         | gciUser        |Engage Voice Standalone-RingCX Standard Concurrent|               | Office-RingEX Core |                        
-     # | CA      | BISUAT      | bisuatUser     |Events-RingCentral Events Pro+                    |               |                    |
-     # | AU      | Proservira  | ProserviraUser |RingCentral Contact Center-Ultimate Edition       |               |                    |
-    #  | IN      | GCI         | gciUser        |Professional Services-                            |               | Office-RingEX Premium                  |
+      | country | environment | user       | package1              | package2 | package3 |
+      | UK      | BISUAT      | bisuatUser | Office-RingEX Premium |          |          |
+
+    # @us
+    # Examples:
+    #   | country | environment | user    | package1                                          | package2 | package3           |
+    #   | US      | GCI         | gciUser | Engage Digital Standalone-concurrent seat based   |          |                    |
+    #   | US      | GCI         | gciUser | Engage Voice Standalone-RingCX Standard Concurrent|          | Office-RingEX Core |
   

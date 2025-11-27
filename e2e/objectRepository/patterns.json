@@ -64,7 +64,7 @@
       "Button_Apply":"//button[.='Apply']",
       "Button_convert":"//button[.='Convert']"
     },
-    "OpportunityPage": {
+    "Account_Page": {
       "Account_Name_Link":"(//a[contains(@href,'/lightning/r/Account/')])[1]",
       "Contact_role_relatedlist":"//a[@class='slds-tabs_default__link' and text()='Contact Roles']",
       "New_button":"//button[@class='slds-button slds-button_neutral' and text()='New']",
@@ -74,9 +74,14 @@
       "primary_checkbox":"//input[@id='j_id0:list:j_id3:j_id4:j_id6']",
       "save_button":"//a[text()='Save']",
       "role_dropdown":"//select[@name='j_id0:list:j_id3:j_id4:roleSelectorId']",
-      "contact_name":"(//table[@class='list']//tr[contains(@class, 'dataRow')]//a)[1]",
+      "contact_name":"(//table[@class='list']//tr[contains(@class, 'dataRow')]//a)[1]"
+    },
+    "Opportunity_Page": {
       "Quote_tab":"//a[contains(text(),'Quote')]",
       "New_sales_quote":"//button[@data-ui-auto='add-new-quote' and @data-recordtype='Sales Quote']",
+      "signup_the_account":"//button[text()='Sign Up']"
+    },
+    "Quote_Page": {
       "Service_dropdown":"//select[@id='select-service-filter']",
       "service_dropdown_option":"//select[@id='select-service-filter']//option[contains(normalize-space(text()),'{PACKAGE_NAME}')]",
       "Package_group_button":"//span[contains(text(),'{PACKAGE_NAME}')]/ancestor::button",
@@ -85,6 +90,7 @@
       "Close_package_header_button":"//span[@class='group-name' and text()='Office']/ancestor::button",
       "input_seats":"//label[contains(text(), 'Number of')]/parent::div//input[@type='number']",
       "input_seats_by_group":"//span[@class='group-name' and contains(text(),'{GROUP_NAME}')]//ancestor::div[contains(@class,'slds-section')]//label[contains(text(), 'Number of')]/following-sibling::input[@type='number']",
+      "UQT_tabs":"//span[text()='{tab_name}']",
       "Add_Products_tab":"//span[text()='Add Products']",
       "Price_tab":"//span[text()='Price']",
       "Add-ons":"//label[contains(@for,'{PACKAGE_NAME}')]//span[contains(text(),' Add Ons ')]",
@@ -94,8 +100,11 @@
       "Quote_Details":"//span[.='Quote Details']",
       "Payment_method_dropdown":"//select[@id='payment-method']",
       "area_code":"(//input[@placeholder='Search Codes'])[1]",
-      "Request_invoice_approval_link":"//a[contains(text(),' Request Invoicing Request Approval. ')]",
       "price_tab_Error_notification":"//div[@title='Click to show/hide all notifications']",
+      "PS_Phases_general_buttons":"//button[text()=' {BUTTON_NAME} ']",
+      "Request_invoice_approval_link":"//a[contains(text(),' Request Invoicing Request Approval. ')]"
+    },
+    "Invoice_Approval_Page": {
       "invoice_approval_radio_button":"//input[@value='Invoicing Request']",
       "Next_button":"//button[text()='Next']",
       "invoice_industry_dropdown":"//lightning-base-combobox-item[@data-value='Automotive']",
@@ -107,7 +116,9 @@
       "Fields_edit_button":"//button[@title='Edit Status']",
       "invoive_status_dropdown":"//button[@aria-label='Status']",
       "invoive_status_option":"//span[@title='Approved']",
-      "invoice_save_button":"//button[text()='Save']",    
+      "invoice_save_button":"//button[text()='Save']"
+    },
+    "Sales_Agreement_Page": {
       "quote_number":"//a[@data-ui-auto='quote-number']",
       "SA_Details_tab":"//a[text()='Details']",
       "SA_quote_Status_dropdown":"//button[@aria-label='Status']",
@@ -116,8 +127,6 @@
       "SA_quote_status_option":"//span[@title='Active']",
       "SA_start_date":"//input[@name='Start_Date__c']",
       "SA_end_date":"//input[@name='End_Date__c']"
-
-
     },
       "Toast_message":{
       "successMessage": "//h1[contains(text(),'Logged In Successfully')]",

@@ -1,11 +1,13 @@
 import { Given, When, Then, setDefaultTimeout } from "@cucumber/cucumber";
 import { pageFixture } from "../fixtures/pageFixture";
 import { LoginPage } from "../pages/LoginPage";
+import { OpportunityPage } from "../pages/OpportunityPage";
 
 setDefaultTimeout(60000);
 
-// Create login page instance - will be initialized per scenario
+// Create page instances - will be initialized per scenario
 let loginPage: LoginPage;
+let opportunityPage: OpportunityPage;
 let currentCountry: string; // Will be set from Examples table
 let currentEnvironment: string; // Will be set from Examples table
 
@@ -68,5 +70,6 @@ When("User successfully created the quote", { timeout: 180000 }, async () =>{
 });
 
 Then("User Signup the account", { timeout: 180000 }, async () =>{
-  await OpportunityPage.signup_the_account();
+  opportunityPage = new OpportunityPage(pageFixture.page);
+  await opportunityPage.signup_the_account();
 });
