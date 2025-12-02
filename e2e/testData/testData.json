@@ -149,5 +149,11 @@
       "expectedResult": "validation_error",
       "expectedMessage": "usernameRequired"
     }
+  },
+  "featureToggles": {
+    "Enable_ProServe_for_GSP": {
+      "enabled": true,
+      "description": "Enable ProServe features for GSP users. When enabled, shows UQT on Opportunity Quote Tab and bypasses Disable_Commercial_Quoting__c field."
+    }
   }
 }
