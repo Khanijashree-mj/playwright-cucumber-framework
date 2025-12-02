@@ -101,43 +101,4 @@ export class TestDataManager {
     }
     return envUrl;
   }
-
-  // =============================================================================
-  // FEATURE TOGGLE ACCESS
-  // =============================================================================
-
-  /**
-   * Check if a feature toggle is enabled
-   * @param toggleName - Feature toggle name (e.g., 'Enable_ProServe_for_GSP')
-   * @returns true if toggle is enabled, false otherwise
-   */
-  public isFeatureToggleEnabled(toggleName: string): boolean {
-    const toggles = this.data.featureToggles;
-    if (!toggles) {
-      console.log(`⚠️ No feature toggles configured. Returning false for '${toggleName}'`);
-      return false;
-    }
-
-    const toggle = toggles[toggleName];
-    if (!toggle) {
-      console.log(`⚠️ Feature toggle '${toggleName}' not found. Available: ${Object.keys(toggles).join(', ')}`);
-      return false;
-    }
-
-    return toggle.enabled === true;
-  }
-
-  /**
-   * Get feature toggle configuration
-   * @param toggleName - Feature toggle name
-   * @returns Toggle configuration object or null if not found
-   */
-  public getFeatureToggle(toggleName: string): { enabled: boolean; description: string } | null {
-    const toggles = this.data.featureToggles;
-    if (!toggles) {
-      return null;
-    }
-
-    return toggles[toggleName] || null;
-  }
 }
