@@ -15,7 +15,7 @@ let page: Page;
 let context: BrowserContext;
 BeforeAll(async function () {
   browser = await chromium.launch({ 
-    headless: false, 
+    headless: true, 
     slowMo: 50,
     args: [
       '--start-maximized',
